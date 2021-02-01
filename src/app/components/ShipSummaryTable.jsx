@@ -9,7 +9,7 @@ import { ShipProps } from 'ed-forge';
 const {
   SPEED, BOOST_SPEED, DAMAGE_METRICS, JUMP_METRICS, SHIELD_METRICS,
   ARMOUR_METRICS, CARGO_CAPACITY, FUEL_CAPACITY, UNLADEN_MASS, MAXIMUM_MASS,
-  MODULE_PROTECTION_METRICS
+  MODULE_PROTECTION_METRICS, PASSENGER_CAPACITY
 } = ShipProps;
 
 /**
@@ -43,7 +43,7 @@ export default class ShipSummaryTable extends TranslatedComponent {
     let translate = language.translate;
     let u = language.units;
     let formats = language.formats;
-    let { time, int, round, f1, f2 } = formats;
+    let { time, int, f1, f2 } = formats;
     let hide = tooltip.bind(null, null);
 
     const speed = ship.get(SPEED);
@@ -177,10 +177,9 @@ export default class ShipSummaryTable extends TranslatedComponent {
                   onMouseLeave={hide}
                 >{timeToDrain === Infinity ? '∞' : time(timeToDrain)}</td>
                 {/* <td>{f1(ship.totalHps)}</td> */}
-                <td>{round(ship.get(CARGO_CAPACITY))}{u.T}</td>
-                {/* TODO: PAX */}
-                <td>{NaN}</td>
-                <td>{round(ship.get(FUEL_CAPACITY))}{u.T}</td>
+                <td>{ship.get(CARGO_CAPACITY)}{u.T}</td>
+                <td>{ship.get(PASSENGER_CAPACITY)}</td>
+                <td>{ship.get(FUEL_CAPACITY)}{u.T}</td>
                 <td onMouseEnter={termtip.bind(null, 'TT_SUMMARY_HULL_MASS', { cap: 0 })}
                   onMouseLeave={hide}
                 >{ship.readProp('hullmass')}{u.T}</td>
