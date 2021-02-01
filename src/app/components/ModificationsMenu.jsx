@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { chain, keys } from 'lodash';
+import { chain, flatMap, keys } from 'lodash';
 import TranslatedComponent from './TranslatedComponent';
 import { stopCtxPropagation } from '../utils/UtilityFunctions';
 import cn from 'classnames';
@@ -54,44 +54,37 @@ export default class ModificationsMenu extends TranslatedComponent {
     const { language, tooltip, termtip } = this.context;
     const { translate } = language;
 
-    const blueprints = [];
-    for (const blueprint of m.getApplicableBlueprints()) {
+    const blueprints = m.getApplicableBlueprints().map(blueprint => {
       const info = getBlueprintInfo(blueprint);
-      let blueprintGrades = [];
-      for (let grade in info.features) {
+      let blueprintGrades = keys(info.features).map(grade => {
         // Grade is a string in the JSON so make it a number
         grade = Number(grade);
         const active = m.getBlueprint() === blueprint && m.getBlueprintGrade() === grade;
         const key = blueprint + ':' + grade;
-        const tooltipContent = blueprintTooltip(language, m, blueprint, grade);
-        blueprintGrades.push(
-          <li key={key} data-id={key} className={cn('c', { active })}
-            style={{ width: '2em' }}
-            onMouseOver={termtip.bind(null, tooltipContent)}
-            onMouseOut={tooltip.bind(null, null)}
-            onClick={() => {
-              m.setBlueprint(blueprint, grade, 1);
-              this.setState({
-                blueprintMenuOpened: false,
-                specialMenuOpened: true,
-              });
-            }}
-            ref={active ? (ref) => { this.selectedModRef = ref; } : undefined}
-          >{grade}</li>
-        );
-      }
+        return <li key={key} data-id={key} className={cn('c', { active })}
+          style={{ width: '2em' }}
+          onMouseOver={termtip.bind(null, blueprintTooltip(language, m, blueprint, grade))}
+          onMouseOut={tooltip.bind(null, null)}
+          onClick={() => {
+            m.setBlueprint(blueprint, grade, 1);
+            this.setState({
+              blueprintMenuOpened: false,
+              specialMenuOpened: true,
+            });
+          }}
+          ref={active ? (ref) => { this.selectedModRef = ref; } : undefined}
+        >{grade}</li>;
+      });
 
-      blueprints.push(
-        [
-          <div key={'div' + blueprint} className={'select-group cap'}>
-            {translate(blueprint)}
-          </div>,
-          <ul key={'ul' + blueprint}>{blueprintGrades}</ul>
-        ],
-      );
-    }
+      return [
+        <div key={'div' + blueprint} className={'select-group cap'}>
+          {translate(blueprint)}
+        </div>,
+        <ul key={'ul' + blueprint}>{blueprintGrades}</ul>
+      ];
+    });
 
-    return [].concat(...blueprints);
+    return flatMap(blueprints);
   }
 
   /**
@@ -248,6 +241,7 @@ export default class ModificationsMenu extends TranslatedComponent {
     } = this.state;
 
     const appliedBlueprint = m.getBlueprint();
+    const appliedGrade = m.getBlueprintGrade();
     const appliedExperimental = m.getExperimental();
 
     let renderComponents = [];
@@ -261,16 +255,16 @@ export default class ModificationsMenu extends TranslatedComponent {
       default:
         // Since the first case didn't apply, there is a blueprint applied so
         // we render the modifications
-        // let blueprintTt  = blueprintTooltip(translate, m.blueprint.grades[m.blueprint.grade]);
+        let blueprintTt  = blueprintTooltip(language, m, appliedBlueprint, appliedGrade);
 
         renderComponents.push(
           <div style={{ cursor: 'pointer' }} key="blueprintsMenu"
             className="section-menu button-inline-menu"
-            // onMouseOver={termtip.bind(null, blueprintTt)}
-            // onMouseOut={tooltip.bind(null, null)}
+            onMouseOver={termtip.bind(null, blueprintTt)}
+            onMouseOut={tooltip.bind(null, null)}
             onClick={this._toggleBlueprintsMenu}
           >
-            {translate(appliedBlueprint)} {translate('grade')} {m.getBlueprintGrade()}
+            {translate(appliedBlueprint)} {translate('grade')} {appliedGrade}
           </div>
         );
 
