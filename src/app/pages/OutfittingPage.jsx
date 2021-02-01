@@ -108,6 +108,7 @@ const SHOW_BY_DEFAULT = {
   'scannerrange': true,
   'scannertimetoscan': true,
   'maxangle': true,
+  'mass': true,
 };
 
 /**

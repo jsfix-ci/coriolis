@@ -124,15 +124,18 @@ export default class Slot extends TranslatedComponent {
                 </span>
               )}
             </div>
-            <div className={'r'}>
-              {formats.round(mass)}
-              {units.T}
-            </div>
+            {propsToShow.mass ?
+              <div className={'r'}>
+                {formats.round(mass)}
+                {units.T}
+              </div> : null}
           </div>
           <div className={'cb'}>
             {toPairs(propsToShow).sort().map(([prop, show]) => {
               const { unit, value } = m.getFormatted(prop, true);
-              if (!show || isNaN(value)) {
+              // Don't show mass again; it's already shown on the top right
+              // corner of a slot
+              if (!show || isNaN(value) || prop == 'mass') {
                 return null;
               } else {
                 return (<div className='l'>
