@@ -102,21 +102,15 @@ export default class ModificationsMenu extends TranslatedComponent {
     const experimentals = [];
     for (const experimental of m.getApplicableExperimentals()) {
       const active = experimental === applied;
-      // TODO:
-      // let specialTt = specialToolTip(
-      //   translate,
-      //   m.blueprint.grades[m.blueprint.grade],
-      //   m.grp, m,
-      //   experimental,
-      // );
+      let specialTt = specialToolTip(language, m, experimental);
       experimentals.push(
         <div key={experimental} data-id={experimental}
           style={{ cursor: 'pointer' }}
           className={cn('button-inline-menu', { active })}
           onClick={this._specialSelected(experimental)}
           ref={active ? (ref) => { this.selectedSpecialRef = ref; } : undefined}
-          // onMouseOver={termtip.bind(null, specialTt)}
-          // onMouseOut={tooltip.bind(null, null)}
+          onMouseOver={termtip.bind(null, specialTt)}
+          onMouseOut={tooltip.bind(null, null)}
         >{translate(experimental)}</div>
       );
     }
@@ -273,7 +267,7 @@ export default class ModificationsMenu extends TranslatedComponent {
           let specialTt;
           if (appliedExperimental) {
             specialLabel = appliedExperimental;
-            // specialTt = specialToolTip(translate, m.blueprint.grades[m.blueprint.grade], m.grp, m, m.blueprint.special.edname);
+            specialTt = specialToolTip(language, m, appliedExperimental);
           }
           renderComponents.push(
             <div className="section-menu button-inline-menu"

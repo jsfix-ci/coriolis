@@ -1,63 +1,43 @@
 import React from 'react';
 import { Modifications } from 'coriolis-data/dist';
 import { Module } from 'ed-forge';
-import { getBlueprintInfo } from 'ed-forge/lib/data/blueprints';
-import { keys, uniq } from 'lodash';
+import { getBlueprintInfo, getExperimentalInfo } from 'ed-forge/lib/data/blueprints';
+import { entries, keys, uniq } from 'lodash';
 
 /**
  * Generate a tooltip with details of a blueprint's specials
- * @param   {Object}  translate   The translate object
- * @param   {Object}  blueprint   The blueprint at the required grade
- * @param   {string}  grp         The group of the module
- * @param   {Object}  m           The module to compare with
+ * @param   {Object} language   The translate object
+ * @param   {Module} m           The module to compare with
  * @param   {string} specialName  The name of the special
  * @returns {Object}              The react components
  */
-export function specialToolTip(translate, blueprint, grp, m, specialName) {
-  const effects = [];
-  if (!blueprint || !blueprint.features) {
-    return undefined;
-  }
-  if (m) {
-    // We also add in any benefits from specials that aren't covered above
-    if (m.blueprint) {
-      for (const feature in Modifications.modifierActions[specialName]) {
-        // if (!blueprint.features[feature] && !m.mods.feature) {
-        const featureDef = Modifications.modifications[feature];
-        if (featureDef && !featureDef.hidden) {
-          let symbol = '';
-          if (feature === 'jitter') {
-            symbol = '°';
-          } else if (featureDef.type === 'percentage') {
-            symbol = '%';
-          }
-          let current = m.getModValue(feature) - m.getModValue(feature, true);
-          if (featureDef.type === 'percentage') {
-            current = Math.round(current / 10) / 10;
-          } else if (featureDef.type === 'numeric') {
-            current /= 100;
-          }
-          const currentIsBeneficial = isValueBeneficial(feature, current);
-
-          effects.push(
-            <tr key={feature + '_specialTT'}>
-              <td style={{ textAlign: 'left' }}>{translate(feature, grp)}</td>
-              <td>&nbsp;</td>
-              <td className={current === 0 ? '' : currentIsBeneficial ? 'secondary' : 'warning'}
-                style={{ textAlign: 'right' }}>{current}{symbol}</td>
-              <td>&nbsp;</td>
-            </tr>
-          );
-        }
-      }
-    }
-  }
-
+export function specialToolTip(language, m, specialName) {
+  const { formats, translate } = language;
   return (
     <div>
       <table width='100%'>
         <tbody>
-          {effects}
+          {entries(getExperimentalInfo(specialName).features).map(
+            ([prop, feats]) => {
+              const { max, only } = feats;
+              if (only && !m.getItem().match(only)) {
+                return null;
+              }
+
+              const { value, unit, beneficial } = m.getModifierFormatted(prop);
+              // If the product of value and min/max is positive, both values
+              // point into the same direction, i.e. positive/negative.
+              const specialBeneficial  = (value * max) > 0 === beneficial;
+
+              return <tr key={prop + '_specialTT'}>
+                <td style={{ textAlign: 'left' }}>{translate(prop)}</td>
+                <td>&nbsp;</td>
+                <td className={specialBeneficial ? 'secondary' : 'warning'}
+                  style={{ textAlign: 'right' }}>{formats.round(max * 100)}{unit}</td>
+                <td>&nbsp;</td>
+              </tr>;
+            }
+          )}
         </tbody>
       </table>
     </div>
