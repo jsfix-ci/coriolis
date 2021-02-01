@@ -76,12 +76,16 @@ export function blueprintTooltip(language, m, previewBP, previewGrade) {
         </thead>
         <tbody>
           {features.map((prop) => {
+            const { min, max, only } = bpFeatures[prop] || {};
+            // Skip this property if it doesn't apply to this module
+            if (only && !m.getItem().match(only)) {
+              return null;
+            }
             const { value, unit, beneficial } = m.getModifierFormatted(prop);
             if (!bpFeatures[prop] && !value) {
               // Can happen for exported synthetics
               return null;
             }
-            const { min, max } = bpFeatures[prop] || {};
             // If the product of value and min/max is positive, both values
             // point into the same direction, i.e. positive/negative.
             const minBeneficial  = (value * min) > 0 === beneficial;
