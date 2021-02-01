@@ -64,7 +64,7 @@ export default class ModificationsMenu extends TranslatedComponent {
         const active = m.getBlueprint() === blueprint && m.getBlueprintGrade() === grade;
         const key = blueprint + ':' + grade;
         const tooltipContent = blueprintTooltip(language, m, blueprint, grade);
-        blueprintGrades.unshift(
+        blueprintGrades.push(
           <li key={key} data-id={key} className={cn('c', { active })}
             style={{ width: '2em' }}
             onMouseOver={termtip.bind(null, tooltipContent)}
