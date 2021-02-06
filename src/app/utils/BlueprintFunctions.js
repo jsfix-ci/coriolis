@@ -2,7 +2,25 @@ import React from 'react';
 import { Modifications } from 'coriolis-data/dist';
 import { Module } from 'ed-forge';
 import { getBlueprintInfo, getExperimentalInfo } from 'ed-forge/lib/data/blueprints';
-import { entries, keys, uniq } from 'lodash';
+import { fromPairs, keys, uniq } from 'lodash';
+
+/**
+ *
+ * @param {Module} module Module to get modifiers for
+ * @param {string[]} props Properties to get modifiers for
+ * @returns {React.Component[]} Table-cell modifiers
+ */
+function _getModifiers(formats, module, props) {
+  return fromPairs(props.map((prop) => {
+    const { value, unit, beneficial } = module.getModifierFormatted(prop);
+    return [
+      prop,
+      <td className={beneficial === undefined ? '' : beneficial ? 'secondary' : 'warning'} style={{ textAlign: 'right' }}>
+        {formats.round(value || 0)}{unit}
+      </td>
+    ];
+  }));
+}
 
 /**
  * Generate a tooltip with details of a blueprint's specials
@@ -13,28 +31,28 @@ import { entries, keys, uniq } from 'lodash';
  */
 export function specialToolTip(language, m, specialName) {
   const { formats, translate } = language;
+  const features = keys(getExperimentalInfo(specialName).features);
+  const currents = _getModifiers(formats, m, features);
+  const thens = m.try(() => {
+    m.setExperimental(specialName);
+    return _getModifiers(formats, m, features);
+  });
   return (
     <div>
       <table width='100%'>
+      <thead>
+          <tr>
+            <td>{translate('feature')}</td>
+            <td>{translate('current')}</td>
+            <td>{translate('then')}</td>
+          </tr>
+        </thead>
         <tbody>
-          {entries(getExperimentalInfo(specialName).features).map(
-            ([prop, feats]) => {
-              const { max, only } = feats;
-              if (only && !m.getItem().match(only)) {
-                return null;
-              }
-
-              const { value, unit, beneficial } = m.getModifierFormatted(prop);
-              // If the product of value and min/max is positive, both values
-              // point into the same direction, i.e. positive/negative.
-              const specialBeneficial  = (value * max) > 0 === beneficial;
-
+          {features.map((prop) => {
               return <tr key={prop + '_specialTT'}>
                 <td style={{ textAlign: 'left' }}>{translate(prop)}</td>
-                <td>&nbsp;</td>
-                <td className={specialBeneficial ? 'secondary' : 'warning'}
-                  style={{ textAlign: 'right' }}>{formats.round(max * 100)}{unit}</td>
-                <td>&nbsp;</td>
+                {currents[prop]}
+                {thens[prop]}
               </tr>;
             }
           )}
@@ -60,8 +78,18 @@ export function blueprintTooltip(language, m, previewBP, previewGrade) {
     return null;
   }
 
-  const bpFeatures = getBlueprintInfo(blueprint).features[grade];
-  const features = uniq(m.getModifiedProperties().concat(keys(bpFeatures)));
+  const features = uniq(m.getModifiedProperties().concat(
+    keys(getBlueprintInfo(blueprint).features[grade])
+  ));
+  const mins = m.try(() => {
+    m.setBlueprint(blueprint, grade, 0);
+    return _getModifiers(formats, m, features);
+  });
+  const currents = _getModifiers(formats, m, features);
+  const maxs = m.try(() => {
+    m.setBlueprint(blueprint, grade, 1);
+    return _getModifiers(formats, m, features);
+  });
 
   return (
     <div>
@@ -76,31 +104,11 @@ export function blueprintTooltip(language, m, previewBP, previewGrade) {
         </thead>
         <tbody>
           {features.map((prop) => {
-            const { min, max, only } = bpFeatures[prop] || {};
-            // Skip this property if it doesn't apply to this module
-            if (only && !m.getItem().match(only)) {
-              return null;
-            }
-            const { value, unit, beneficial } = m.getModifierFormatted(prop);
-            if (!bpFeatures[prop] && !value) {
-              // Can happen for exported synthetics
-              return null;
-            }
-            // If the product of value and min/max is positive, both values
-            // point into the same direction, i.e. positive/negative.
-            const minBeneficial  = (value * min) > 0 === beneficial;
-            const maxBeneficial  = (value * max) > 0 === beneficial;
             return (<tr key={prop}>
               <td style={{ textAlign: 'left' }}>{translate(prop)}</td>
-              <td className={!min ? '' : minBeneficial ? 'secondary' : 'warning'} style={{ textAlign: 'right' }}>
-                {!isNaN(min) && formats.round(min * 100)}{!isNaN(min) && unit}
-              </td>
-              <td className={!value ? '' : beneficial ? 'secondary' : 'warning'} style={{ textAlign: 'right' }}>
-                {formats.round(value || 0)}{unit}
-              </td>
-              <td className={!max ? '' : maxBeneficial ? 'secondary' : 'warning'} style={{ textAlign: 'right' }}>
-                {!isNaN(max) && formats.round(max * 100)}{!isNaN(max) && unit}
-              </td>
+              {mins[prop]}
+              {currents[prop]}
+              {maxs[prop]}
             </tr>);
           })}
         </tbody>
