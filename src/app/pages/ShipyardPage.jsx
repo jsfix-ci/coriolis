@@ -2,6 +2,7 @@ import React from 'react';
 import Page from './Page';
 import cn from 'classnames';
 import { Factory } from 'ed-forge';
+import { JUMP_METRICS } from 'ed-forge/lib/ship-stats';
 import { SizeMap } from '../shipyard/Constants';
 import Link from '../components/Link';
 
@@ -15,7 +16,9 @@ function shipSummary(shipId) {
   let ship = Factory.newShip(shipId);
 
   let coreSizes = ship.readMeta('coreSizes');
+  let { jumpRange, totalRange } = ship.getMetrics(JUMP_METRICS);
   let summary = {
+    agility: ship.readProp('pitch') + ship.readProp('yaw') + ship.readProp('roll'),
     baseArmour: ship.readProp('basearmour'),
     baseShieldStrength: ship.readProp('baseshieldstrength'),
     boost: ship.readProp('boost'),
@@ -26,13 +29,13 @@ function shipSummary(shipId) {
     hpCount: 0,
     hullMass: ship.readProp('hullmass'),
     intCount: 0,
-    manufacturer: ship.readMeta('manufacturer'),
     masslock: ship.readProp('masslock'),
-    maxCargo: 0,
-    maxPassengers: 0,
     hp: [0, 0, 0, 0, 0], // Utility, Small, Medium, Large, Huge
     int: [0, 0, 0, 0, 0, 0, 0, 0], // Sizes 1 - 8
+    jumpRange,
+    pitch: ship.readProp('pitch'),
     retailCost: ship.readMeta('retailCost'),
+    roll: ship.readProp('roll'),
     speed: ship.readProp('speed'),
     standard: [
       'powerplant',
@@ -43,10 +46,8 @@ function shipSummary(shipId) {
       'radar',
       'fueltank'
     ].map(k => coreSizes[k]),
-    agility:
-      ship.readProp('pitch') +
-      ship.readProp('yaw') +
-      ship.readProp('roll')
+    totalRange,
+    yaw: ship.readProp('yaw'),
   };
 
   // Count Hardpoints by class
@@ -55,26 +56,26 @@ function shipSummary(shipId) {
     summary.hpCount++;
   });
   // Count Internal Compartments by class
+  let maxCargo = 0, maxPassengers = 0;
   ship.getInternals(undefined, true).forEach(internal => {
-    summary.int[internal.getSize()]++;
+    const size = String(internal.getSize());
+    summary.int[size]++;
     summary.intCount++;
+
+    // Try cargo racks
+    try {
+      internal.setItem('cargorack', size);
+      maxCargo += internal.get('cargo');
+    } catch {}
+    // Try economy cabins
+    try {
+      internal.setItem('passengercabins', size < '6' ? size : '6', '1');
+      maxPassengers += internal.get('cabincapacity');
+    } catch {}
   });
-  // ship.optimizeMass({ pd: '1D' }); // Optimize Mass with 1D PD for maximum possible jump range
-  summary.maxJumpRange = -1; // ship.unladenRange; // Record Jump Range
 
-  // Best thrusters
-  // let th;
-  // if (ship.standard[1].maxClass === 3) {
-  //   th = 'tz';
-  // } else if (ship.standard[1].maxClass === 2) {
-  //   th = 'u0';
-  // } else {
-  //   th = ship.standard[1].maxClass + 'A';
-  // }
-
-  // ship.optimizeMass({ th, fsd: '2D', ft: '1C' }); // Optmize mass with Max Thrusters
-  summary.topSpeed = -1; // ship.topSpeed;
-  summary.topBoost = -1; // ship.topBoost;
+  summary.maxCargo = maxCargo;
+  summary.maxPassengers = maxPassengers;
 
   return summary;
 }
@@ -183,21 +184,22 @@ export default class ShipyardPage extends Page {
         onMouseEnter={noTouch && this._highlightShip.bind(this, s.id)}
         onClick={() => this._toggleCompare(s.id)}
       >
-        <td className="ri">{s.manufacturer}</td>
         <td className="ri">{fInt(s.retailCost)}</td>
         <td className="ri cap">{translate(SizeMap[s.class])}</td>
         <td className="ri">{fInt(s.crew)}</td>
         <td className="ri">{s.masslock}</td>
-        <td className="ri">{fInt(s.agility)}</td>
-        <td className="ri">{fInt(s.hardness)}</td>
         <td className="ri">{fInt(s.hullMass)}</td>
+        <td className="ri">{fInt(s.agility)}</td>
         <td className="ri">{fInt(s.speed)}</td>
         <td className="ri">{fInt(s.boost)}</td>
+        <td className="ri">{fInt(s.pitch)}</td>
+        <td className="ri">{fInt(s.yaw)}</td>
+        <td className="ri">{fInt(s.roll)}</td>
+        <td className="ri">{fRound(s.jumpRange)}</td>
+        <td className="ri">{fRound(s.totalRange)}</td>
+        <td className="ri">{fInt(s.hardness)}</td>
         <td className="ri">{fInt(s.baseArmour)}</td>
         <td className="ri">{fInt(s.baseShieldStrength)}</td>
-        <td className="ri">{fInt(s.topSpeed)}</td>
-        <td className="ri">{fInt(s.topBoost)}</td>
-        <td className="ri">{fRound(s.maxJumpRange)}</td>
         <td className="ri">{fInt(s.maxCargo)}</td>
         <td className="ri">{fInt(s.maxPassengers)}</td>
         <td className="cn">{s.standard[0]}</td>
@@ -345,110 +347,87 @@ export default class ShipyardPage extends Page {
               <table style={{ marginLeft: 'calc(12em - 1px)', zIndex: 0 }} className="shipyard-table">
                 <thead>
                   <tr className="main">
-                    <th
-                      rowSpan={3}
-                      className="sortable"
-                      onClick={sortShips('manufacturer')}
-                    >
-                      {translate('manufacturer')}
-                    </th>
+                    {/* First all headers that spread out over three rows */}
+                    {/* cost placeholder */}
                     <th>&nbsp;</th>
-                    <th
-                      rowSpan={3}
-                      className="sortable"
-                      onClick={sortShips('class')}
-                    >
+                    <th rowSpan={3} className="sortable" onClick={sortShips('class')}>
                       {translate('size')}
                     </th>
-                    <th
-                      rowSpan={3}
-                      className="sortable"
-                      onClick={sortShips('crew')}
-                    >
+                    <th rowSpan={3} className="sortable" onClick={sortShips('crew')}>
                       {translate('crew')}
                     </th>
-                    <th
-                      rowSpan={3}
-                      className="sortable"
+                    <th rowSpan={3} className="sortable"
                       onMouseEnter={termtip.bind(null, 'mass lock factor')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('masslock')}
-                    >
+                      onMouseLeave={hide} onClick={sortShips('masslock')}>
                       {translate('MLF')}
                     </th>
-                    <th
-                      rowSpan={3}
-                      className="sortable"
-                      onClick={sortShips('agility')}
-                    >
-                      {translate('agility')}
-                    </th>
-                    <th
-                      rowSpan={3}
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'hardness')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('hardness')}
-                    >
-                      {translate('hrd')}
-                    </th>
+                    {/* hull mass placeholder */}
                     <th>&nbsp;</th>
-                    <th colSpan={4}>{translate('base')}</th>
-                    <th colSpan={5}>{translate('max')}</th>
+                    <th colSpan={6}>{translate('agility')}</th>
+                    <th colSpan={2}>{translate('travel')}</th>
+                    <th colSpan={3}>{translate('defence')}</th>
+                    {/* cargo placeholder */}
+                    <th>&nbsp;</th>
+                    {/* pax placeholder */}
+                    <th>&nbsp;</th>
                     <th className="lft" colSpan={7} />
                     <th className="lft" colSpan={5} />
                     <th className="lft" colSpan={8} />
                   </tr>
                   <tr>
-                    <th
-                      className="sortable lft"
-                      onClick={sortShips('retailCost')}
-                    >
+                    {/* Now all headers in a second-row */}
+                    <th className="sortable lft" onClick={sortShips('retailCost')}>
                       {translate('cost')}
                     </th>
                     <th className="sortable lft" onClick={sortShips('hullMass')}>
                       {translate('hull')}
                     </th>
-                    <th className="sortable lft" onClick={sortShips('speed')}>
+                    <th className="sortable lft" onClick={sortShips('agility')}>
+                      {translate('rating')}
+                    </th>
+                    <th className="sortable" onClick={sortShips('speed')}>
                       {translate('speed')}
                     </th>
                     <th className="sortable" onClick={sortShips('boost')}>
                       {translate('boost')}
                     </th>
+                    <th className="sortable" onClick={sortShips('pitch')}>
+                      {translate('pitch')}
+                    </th>
+                    <th className="sortable" onClick={sortShips('yaw')}>
+                      {translate('yaw')}
+                    </th>
+                    <th className="sortable" onClick={sortShips('roll')}>
+                      {translate('roll')}
+                    </th>
+                    <th className="sortable lft" onClick={sortShips('jumpRange')}>
+                      {translate('jump')}
+                    </th>
+                    <th className="sortable" onClick={sortShips('totalRange')}>
+                      {translate('range')}
+                    </th>
+                    <th className="sortable lft" onMouseEnter={termtip.bind(null, 'hardness')}
+                      onMouseLeave={hide} onClick={sortShips('hardness')}>
+                      {translate('hrd')}
+                    </th>
                     <th className="sortable" onClick={sortShips('baseArmour')}>
                       {translate('armour')}
                     </th>
-                    <th
-                      className="sortable"
-                      onClick={sortShips('baseShieldStrength')}
-                    >
+                    <th className="sortable" onClick={sortShips('baseShieldStrength')}>
                       {translate('shields')}
                     </th>
 
-                    <th className="sortable lft" onClick={sortShips('topSpeed')}>
-                      {translate('speed')}
-                    </th>
-                    <th className="sortable" onClick={sortShips('topBoost')}>
-                      {translate('boost')}
-                    </th>
-                    <th className="sortable" onClick={sortShips('maxJumpRange')}>
-                      {translate('jump')}
-                    </th>
-                    <th className="sortable" onClick={sortShips('maxCargo')}>
+                    <th className="sortable lft" onClick={sortShips('maxCargo')}>
                       {translate('cargo')}
                     </th>
-                    <th className="sortable" onClick={sortShips('maxPassengers')} onMouseEnter={termtip.bind(null, 'passenger capacity')}
-                      onMouseLeave={hide}>
+                    <th className="sortable lft" onClick={sortShips('maxPassengers')}
+                      onMouseEnter={termtip.bind(null, 'passenger capacity')} onMouseLeave={hide}>
                       {translate('pax')}
                     </th>
                     <th className="lft" colSpan={7}>
                       {translate('core module classes')}
                     </th>
-                    <th
-                      colSpan={5}
-                      className="sortable lft"
-                      onClick={sortShips('hpCount')}
-                    >
+                    <th colSpan={5} className="sortable lft" onClick={sortShips('hpCount')}>
                       {translate('hardpoints')}
                     </th>
                     <th
@@ -460,6 +439,7 @@ export default class ShipyardPage extends Page {
                     </th>
                   </tr>
                   <tr>
+                    {/* Third row headers, i.e., units */}
                     <th
                       className="sortable lft"
                       onClick={sortShips('retailCost')}
@@ -469,12 +449,31 @@ export default class ShipyardPage extends Page {
                     <th className="sortable lft" onClick={sortShips('hullMass')}>
                       {units.T}
                     </th>
-                    <th className="sortable lft" onClick={sortShips('speed')}>
+                    {/* agility rating placeholder */}
+                    <th className="lft">&nbsp;</th>
+                    <th className="sortable" onClick={sortShips('speed')}>
                       {units['m/s']}
                     </th>
                     <th className="sortable" onClick={sortShips('boost')}>
                       {units['m/s']}
                     </th>
+                    <th className="sortable" onClick={sortShips('pitch')}>
+                      {units['°/s']}
+                    </th>
+                    <th className="sortable" onClick={sortShips('yaw')}>
+                      {units['°/s']}
+                    </th>
+                    <th className="sortable" onClick={sortShips('roll')}>
+                      {units['°/s']}
+                    </th>
+                    <th className="sortable lft" onClick={sortShips('jumpRange')}>
+                      {units.LY}
+                    </th>
+                    <th className="sortable" onClick={sortShips('totalRange')}>
+                      {units.LY}
+                    </th>
+                    <th className="lft">&nbsp;</th>
+                    {/* armour placeholder */}
                     <th>&nbsp;</th>
                     <th
                       className="sortable"
@@ -482,73 +481,37 @@ export default class ShipyardPage extends Page {
                     >
                       {units.MJ}
                     </th>
-                    <th className="sortable lft" onClick={sortShips('topSpeed')}>
-                      {units['m/s']}
-                    </th>
-                    <th className="sortable" onClick={sortShips('topBoost')}>
-                      {units['m/s']}
-                    </th>
-                    <th className="sortable" onClick={sortShips('maxJumpRange')}>
-                      {units.LY}
-                    </th>
-                    <th className="sortable" onClick={sortShips('maxCargo')}>
+                    <th className="sortable lft" onClick={sortShips('maxCargo')}>
                       {units.T}
                     </th>
-                    <th>&nbsp;</th>
-                    <th
-                      className="sortable lft"
-                      onMouseEnter={termtip.bind(null, 'power plant')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 0)}
-                    >
+                    {/* pax placeholder */}
+                    <th className="lft">&nbsp;</th>
+                    <th className="sortable lft" onMouseEnter={termtip.bind(null, 'power plant')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 0)}>
                       {'pp'}
                     </th>
-                    <th
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'thrusters')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 1)}
-                    >
+                    <th className="sortable" onMouseEnter={termtip.bind(null, 'thrusters')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 1)}>
                       {'th'}
                     </th>
-                    <th
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'frame shift drive')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 2)}
-                    >
+                    <th className="sortable" onMouseEnter={termtip.bind(null, 'frame shift drive')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 2)}>
                       {'fsd'}
                     </th>
-                    <th
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'life support')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 3)}
-                    >
+                    <th className="sortable" onMouseEnter={termtip.bind(null, 'life support')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 3)}>
                       {'ls'}
                     </th>
-                    <th
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'power distriubtor')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 4)}
-                    >
+                    <th className="sortable" onMouseEnter={termtip.bind(null, 'power distriubtor')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 4)}>
                       {'pd'}
                     </th>
-                    <th
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'sensors')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 5)}
-                    >
+                    <th className="sortable" onMouseEnter={termtip.bind(null, 'sensors')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 5)}>
                       {'s'}
                     </th>
-                    <th
-                      className="sortable"
-                      onMouseEnter={termtip.bind(null, 'fuel tank')}
-                      onMouseLeave={hide}
-                      onClick={sortShips('standard', 6)}
-                    >
+                    <th className="sortable" onMouseEnter={termtip.bind(null, 'fuel tank')}
+                      onMouseLeave={hide} onClick={sortShips('standard', 6)}>
                       {'ft'}
                     </th>
                     <th className="sortable lft" onClick={sortShips('hp', 1)}>
