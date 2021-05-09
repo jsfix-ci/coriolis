@@ -155,18 +155,18 @@ export default class AvailableModulesMenu extends TranslatedComponent {
           };
         }
 
-        const mountSymbol = MOUNT_MAP[meta.mount];
+        const mountSymbol = MOUNT_MAP[meta.mount] || '';
         const li = (
           <li key={Item} data-id={Item}
             ref={Item === mountedModule.getItem() ? (ref) => { this.activeSlotRef = ref; } : undefined}
-            className={cn('c', {
+            className={cn(meta.type === 'armour' ? 'lc' : 'c', {
               warning: !disabled && warning && warning(info),
               active: mountedModule.getItem() === Item,
               disabled,
               hardpoint: mountSymbol,
             })}
             {...eventHandlers}
-          >{mountSymbol}{meta.class}{meta.rating}</li>
+          >{meta.type === 'armour' ? Item : `${mountSymbol}${meta.class}${meta.rating}`}</li>
         );
 
         const tail = elems.pop();
