@@ -155,7 +155,7 @@ export default class AvailableModulesMenu extends TranslatedComponent {
           };
         }
 
-        const mountSymbol = MOUNT_MAP[meta.mount] || '';
+        const mountSymbol = MOUNT_MAP[meta.mount];
         const li = (
           <li key={Item} data-id={Item}
             ref={Item === mountedModule.getItem() ? (ref) => { this.activeSlotRef = ref; } : undefined}
@@ -166,7 +166,7 @@ export default class AvailableModulesMenu extends TranslatedComponent {
               hardpoint: mountSymbol,
             })}
             {...eventHandlers}
-          >{meta.type === 'armour' ? Item : `${mountSymbol}${meta.class}${meta.rating}`}</li>
+          >{mountSymbol}{meta.type === 'armour' ? Item : `${meta.class}${meta.rating}`}</li>
         );
 
         const tail = elems.pop();
