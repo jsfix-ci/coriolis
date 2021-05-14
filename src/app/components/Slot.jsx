@@ -9,7 +9,7 @@ import { diffDetails } from '../utils/SlotFunctions';
 import { stopCtxPropagation, wrapCtxMenu } from '../utils/UtilityFunctions';
 import { blueprintTooltip } from '../utils/BlueprintFunctions';
 import { Module } from 'ed-forge';
-import { REG_MILITARY_SLOT, REG_HARDPOINT_SLOT } from 'ed-forge/lib/data/slots';
+import { TYPES } from 'ed-forge/lib/data/slots';
 import autoBind from 'auto-bind';
 import { toPairs } from 'lodash';
 
@@ -79,7 +79,7 @@ export default class Slot extends TranslatedComponent {
     if (m.isEmpty()) {
       return <div className="empty">
         {translate(
-          m.getSlot().match(REG_MILITARY_SLOT) ? 'emptyrestricted' : 'empty'
+          m.isOnSlot(TYPES.MILITARY) ? 'emptyrestricted' : 'empty'
         )}
       </div>;
     } else {
@@ -174,7 +174,7 @@ export default class Slot extends TranslatedComponent {
       case size === 0:
         // This can also happen for armour but that case was handled above
         return 'U';
-      case Boolean(m.getSlot().match(REG_HARDPOINT_SLOT)):
+      case m.isOnSlot(TYPES.HARDPOINT):
         return HARDPOINT_SLOT_LABELS[size];
       default:
         return size;
