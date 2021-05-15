@@ -82,12 +82,14 @@ export default class Offence extends TranslatedComponent {
     const { formats, translate, units } = language;
     const sortOrder = this._sortOrder;
 
-    const damage = ship.getMetrics(DAMAGE_METRICS);
+    const {
+      drained, sustained, rangeMultiplier, hardnessMultiplier, timeToDrain
+    } = ship.getMetrics(DAMAGE_METRICS);
     const portions = {
-      Absolute: damage.types.abs,
-      Explosive: damage.types.expl,
-      Kinetic: damage.types.kin,
-      Thermic: damage.types.therm,
+      Absolute: sustained.types.abs,
+      Explosive: sustained.types.expl,
+      Kinetic: sustained.types.kin,
+      Thermic: sustained.types.therm,
     };
 
     const oppShield = ship.getOpponent().getShield();
@@ -106,8 +108,8 @@ export default class Offence extends TranslatedComponent {
       Thermic: oppArmour.thermal.damageMultiplier,
     };
 
-    let rows = [];
-    for (let weapon of ship.getHardpoints()) {
+    const weapons = sortBy(ship.getHardpoints(), (m) => m.get('distributordraw'));
+    let rows = weapons.map((weapon) => {
       const sdps = weapon.get('sustaineddamagepersecond');
       const byRange = weapon.getRangeEffectiveness();
       const weaponPortions = {
@@ -176,7 +178,7 @@ export default class Offence extends TranslatedComponent {
       if (exp) {
         bpTitle += `, ${translate(exp)}`;
       }
-      rows.push({
+      return {
         slot: weapon.getSlot(),
         mount: weapon.mount,
         classRating: weapon.getClassRating(),
@@ -192,8 +194,9 @@ export default class Offence extends TranslatedComponent {
         armourEft,
         armourSdpsTooltip,
         armourEftTooltip,
-      });
-    }
+      };
+    });
+
     const { predicate, desc } = this.state;
     rows = sortBy(rows, (row) => row[predicate]);
     if (desc) {
@@ -202,18 +205,18 @@ export default class Offence extends TranslatedComponent {
 
     const sdpsTooltip = objToTooltip(
       translate,
-      mapValues(portions, (p) => formats.f1(damage.sustained.dps * p)),
+      mapValues(portions, (p) => formats.f1(sustained.dps * p)),
     );
     const sdpsPie = objToPie(
       translate,
-      mapValues(portions, (p) => Math.round(damage.sustained.dps * p)),
+      mapValues(portions, (p) => Math.round(sustained.dps * p)),
     );
 
     const shieldSdpsSrcs = mergeWith(
       clone(portions),
       shieldMults,
-      (objV, srcV) => damage.sustained.dps * oppShield.absolute.bySys *
-        damage.rangeMultiplier * objV * srcV,
+      (objV, srcV) => sustained.dps * oppShield.absolute.bySys *
+        rangeMultiplier * objV * srcV,
     );
     const shieldsSdps = sum(values(shieldSdpsSrcs));
     const shieldsSdpsTooltip = objToTooltip(
@@ -228,8 +231,8 @@ export default class Offence extends TranslatedComponent {
     const armourSdpsSrcs = mergeWith(
       clone(portions),
       armourMults,
-      (objV, srcV) => damage.sustained.dps * damage.hardnessMultiplier *
-        damage.rangeMultiplier * objV * srcV,
+      (objV, srcV) => sustained.dps * hardnessMultiplier * rangeMultiplier *
+        objV * srcV,
     );
     const armourSdps = sum(values(armourSdpsSrcs));
     const totalArmourSDpsTooltipDetails = objToTooltip(
@@ -241,10 +244,45 @@ export default class Offence extends TranslatedComponent {
       mapValues(armourSdpsSrcs, (v) => Math.round(v)),
     );
 
-    const pd = ship.getPowerDistributor();
-    const timeToDrain = damage.sustained.timeToDrain[ship.getDistributorSettings().Wep];
-    // const timeToDepleteShields = Calc.timeToDeplete(opponentShields.total, shieldsSdps, totalSEps, pd.getWeaponsCapacity(), pd.getWeaponsRechargeRate() * (wep / 4));
-    // const timeToDepleteArmour = Calc.timeToDeplete(opponentArmour.total, armourSdps, totalSEps, pd.getWeaponsCapacity(), pd.getWeaponsRechargeRate() * (wep / 4));
+    const drainedPortions = {
+      Absolute: drained.types.abs,
+      Explosive: drained.types.expl,
+      Kinetic: drained.types.kin,
+      Thermic: drained.types.therm,
+    };
+
+    // How much damage do we deal, before the capacitor is empty?
+    const armourLeft = oppArmour.armour - (timeToDrain * armourSdps);
+    // If we can't kill the enemy on one capacitor, factor in drained damage
+    let timeToDepleteArmour;
+    if (armourLeft > 0) {
+      const effectiveDrainedDps = sum(values(mergeWith(
+        clone(drainedPortions),
+        armourMults,
+        (objV, srcV) => objV * srcV,
+      ))) * drained.dps * rangeMultiplier *
+        hardnessMultiplier;
+      timeToDepleteArmour = effectiveDrainedDps === 0 ? Infinity :
+        timeToDrain + (armourLeft / effectiveDrainedDps);
+    } else {
+      timeToDepleteArmour = oppArmour.armour / armourSdps;
+    }
+
+    // How much damage do we deal, before the capacitor is empty?
+    const shieldsLeft = oppShield.withSCBs - (timeToDrain * shieldsSdps);
+    // If we can't kill the enemy on one capacitor, factor in drained damage
+    let timeToDepleteShields;
+    if (shieldsLeft > 0) {
+      const effectiveDrainedDps = sum(values(mergeWith(
+        clone(drainedPortions),
+        shieldMults,
+        (objV, srcV) => objV * srcV,
+      ))) * drained.dps * rangeMultiplier;
+      timeToDepleteShields = effectiveDrainedDps === 0 ? Infinity :
+        timeToDrain + (shieldsLeft / effectiveDrainedDps);
+    } else {
+      timeToDepleteShields = oppShield.withSCBs / shieldsSdps;
+    }
 
     return (
       <span id='offence'>
@@ -307,7 +345,7 @@ export default class Offence extends TranslatedComponent {
                   <td></td>
                   <td className='ri'>
                     <span onMouseOver={termtip.bind(null, sdpsTooltip)} onMouseOut={tooltip.bind(null, null)}>
-                      ={formats.f1(damage.sustained.dps)}
+                      ={formats.f1(sustained.dps)}
                     </span>
                   </td>
                   <td className='ri'>
@@ -342,8 +380,7 @@ export default class Offence extends TranslatedComponent {
           <h2 onMouseOver={termtip.bind(null, translate('TT_TIME_TO_REMOVE_SHIELDS'))}
             onMouseOut={tooltip.bind(null, null)}>
             {translate('PHRASE_TIME_TO_REMOVE_SHIELDS')}<br/>
-            ToDo
-            {/* {timeToDepleteShields === Infinity ? translate('never') : formats.time(timeToDepleteShields)} */}
+            {timeToDepleteShields === Infinity ? translate('never') : formats.time(timeToDepleteShields)}
           </h2>
           <h2 onMouseOver={termtip.bind(null, translate('TT_EFFECTIVE_SDPS_ARMOUR'))}
             onMouseOut={tooltip.bind(null, null)}>
@@ -353,8 +390,7 @@ export default class Offence extends TranslatedComponent {
           <h2 onMouseOver={termtip.bind(null, translate('TT_TIME_TO_REMOVE_ARMOUR'))}
             onMouseOut={tooltip.bind(null, null)}>
             {translate('PHRASE_TIME_TO_REMOVE_ARMOUR')}<br/>
-            ToDo
-            {/* {timeToDepleteArmour === Infinity ? translate('never') : formats.time(timeToDepleteArmour)} */}
+            {timeToDepleteArmour === Infinity ? translate('never') : formats.time(timeToDepleteArmour)}
           </h2>
         </div>
         <div className='group quarter'>
