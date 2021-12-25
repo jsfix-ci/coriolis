@@ -73,56 +73,6 @@ function slotToSchema(slot) {
 }
 
 /**
- * Generates an object conforming to the ship-loadout JSON schema from a Ship model
- * @param  {string} buildName The build name
- * @param  {Ship} ship        Ship instance
- * @return {Object}           ship-loadout object
- */
-export function toDetailedBuild(buildName, ship) {
-  let standard = ship.standard,
-      hardpoints = ship.hardpoints,
-      internal = ship.internal,
-      code = ship.toString();
-
-  let data = {
-    $schema: 'https://coriolis.io/schemas/ship-loadout/4.json#',
-    name: buildName,
-    ship: ship.name,
-    references: [{
-      name: 'Coriolis.io',
-      url: 'https://coriolis.io' + outfitURL(ship.id, code, buildName),
-      code,
-      shipId: ship.id
-    }],
-    components: {
-      standard: {
-        bulkheads: BulkheadNames[ship.bulkheads.m.index],
-        cargoHatch: { enabled: Boolean(ship.cargoHatch.enabled), priority: ship.cargoHatch.priority + 1 },
-        powerPlant: standardToSchema(standard[0]),
-        thrusters: standardToSchema(standard[1]),
-        frameShiftDrive: standardToSchema(standard[2]),
-        lifeSupport: standardToSchema(standard[3]),
-        powerDistributor: standardToSchema(standard[4]),
-        sensors: standardToSchema(standard[5]),
-        fuelTank: standardToSchema(standard[6])
-      },
-      hardpoints: hardpoints.filter(slot => slot.maxClass > 0).map(slotToSchema),
-      utility: hardpoints.filter(slot => slot.maxClass === 0).map(slotToSchema),
-      internal: internal.map(slotToSchema)
-    },
-    stats: {}
-  };
-
-  for (let stat in ship) {
-    if (!isNaN(ship[stat])) {
-      data.stats[stat] = Math.round(ship[stat] * 100) / 100;
-    }
-  }
-
-  return data;
-};
-
-/**
  * Instantiates a ship from a ship-loadout  object
  * @param  {Object} detailedBuild ship-loadout object
  * @return {Ship} Ship instance
