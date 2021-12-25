@@ -380,15 +380,13 @@ export default class OutfittingPage extends Page {
    * Open up a window for EDDB with a shopping list of our components
    */
   _eddbShoppingList() {
-    const ship = this.state.ship;
+    const { ship } = this.state;
 
-    const shipId = Ships[ship.id].eddbID;
+    const shipId = ship.readMeta('eddbID');
     // Provide unique list of non-PP module EDDB IDs
-    const modIds = ship.internal
-      .concat(ship.bulkheads, ship.standard, ship.hardpoints)
-      .filter(slot => slot !== null && slot.m !== null && !slot.m.pp)
-      .map(slot => slot.m.eddbID)
-      .filter((v, i, a) => a.indexOf(v) === i);
+    const modIds = ship.getModules()
+      .map((m) => m.readMeta('eddbID'))
+      .filter(Boolean);
 
     // Open up the relevant URL
     window.open(
@@ -576,7 +574,7 @@ export default class OutfittingPage extends Page {
               <Download className="lg" />
             </button>
             <button
-              // onClick={this._eddbShoppingList}
+              onClick={this._eddbShoppingList}
               onMouseOver={termtip.bind(null, 'PHRASE_SHOPPING_LIST')}
               onMouseOut={hide}
             >
