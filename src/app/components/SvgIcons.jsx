@@ -262,7 +262,7 @@ export class MatIcon extends SvgIcon {
    */
   svg() {
     return<g xmlns="http://www.w3.org/2000/svg">
-      <path fill="#FF7100" d="M 24.86,4.18
+      <path d="M 24.86,4.18
            C 24.86,4.18 17.17,7.82 17.17,7.82
              17.17,7.82 15.35,14.55 15.35,14.55
              15.35,14.55 24.70,9.75 24.70,9.75
