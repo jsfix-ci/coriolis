@@ -1,6 +1,5 @@
 import React from 'react';
 // import Perf from 'react-addons-perf';
-import { Ships } from 'coriolis-data/dist';
 import cn from 'classnames';
 import Page from './Page';
 import Router from '../Router';
@@ -27,10 +26,10 @@ import UtilitySlotSection from '../components/UtilitySlotSection';
 import OutfittingSubpages from '../components/OutfittingSubpages';
 import ModalExport from '../components/ModalExport';
 import ModalPermalink from '../components/ModalPermalink';
-import ModalShoppingList from '../components/ModalShoppingList';
 import ModalOrbis from '../components/ModalOrbis';
 import autoBind from 'auto-bind';
 import { assign } from 'lodash';
+import EDEngineerButton from '../components/EDEngineerButton';
 
 const SHOW_BY_DEFAULT = {
   'cabincapacity': true,
@@ -395,13 +394,6 @@ export default class OutfittingPage extends Page {
   }
 
   /**
-   * Generates the shopping list
-   */
-  _genShoppingList() {
-    this.context.showModal(<ModalShoppingList ship={this.state.ship} />);
-  }
-
-  /**
    * Handle Key Down
    * @param  {Event} e  Keyboard Event
    */
@@ -594,13 +586,7 @@ export default class OutfittingPage extends Page {
             >
               <OrbisIcon className="lg" />
             </button>
-            <button
-              // onClick={this._genShoppingList}
-              onMouseOver={termtip.bind(null, 'PHRASE_SHOPPING_MATS')}
-              onMouseOut={hide}
-            >
-              <MatIcon className="lg" />
-            </button>
+            <EDEngineerButton ship={ship} />
           </div>
         </div>
 
