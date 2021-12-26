@@ -6,7 +6,6 @@ import Link from './Link';
 import ActiveLink from './ActiveLink';
 import cn from 'classnames';
 import { Cogs, CoriolisLogo, Hammer, Help, Rocket, StatsBars } from './SvgIcons';
-import { Ships } from 'coriolis-data/dist';
 import Persist from '../stores/Persist';
 import { toDetailedExport } from '../shipyard/Serializer';
 import Ship from '../shipyard/Ship';
@@ -18,6 +17,8 @@ import ModalImport from './ModalImport';
 import Slider from './Slider';
 import Announcement from './Announcement';
 import { outfitURL } from '../utils/UrlGenerators';
+import autoBind from 'auto-bind';
+import { Factory } from 'ed-forge';
 
 const SIZE_MIN = 0.65;
 const SIZE_RANGE = 0.55;
@@ -63,24 +64,14 @@ export default class Header extends TranslatedComponent {
    */
   constructor(props, context) {
     super(props);
-    this.shipOrder = Object.keys(Ships).sort();
+    autoBind(this);
+    this.ships = Factory.getAllShipTypes().sort();
 
-    this._setLanguage = this._setLanguage.bind(this);
-    this._setInsurance = this._setInsurance.bind(this);
-    this._setShipDiscount = this._setShipDiscount.bind(this);
-    this._changeShipDiscount = this._changeShipDiscount.bind(this);
-    this._kpShipDiscount = this._kpShipDiscount.bind(this);
-    this._setModuleDiscount = this._setModuleDiscount.bind(this);
-    this._changeModuleDiscount = this._changeModuleDiscount.bind(this);
-    this._kpModuleDiscount = this._kpModuleDiscount.bind(this);
     this._openShips = this._openMenu.bind(this, 's');
     this._openBuilds = this._openMenu.bind(this, 'b');
     this._openComp = this._openMenu.bind(this, 'comp');
     this._openAnnounce = this._openMenu.bind(this, 'announce');
-    this._getAnnouncementsMenu = this._getAnnouncementsMenu.bind(this);
     this._openSettings = this._openMenu.bind(this, 'settings');
-    this._showHelp = this._showHelp.bind(this);
-    this.update = this.update.bind(this);
     this.languageOptions = [];
     this.insuranceOptions = [];
     this.state = {
@@ -241,43 +232,6 @@ export default class Header extends TranslatedComponent {
   };
 
   /**
-   * Uploads all ship-builds to orbis
-   * @param {e} e Event
-   */
-  _uploadAllBuildsToOrbis(e) {
-    e.preventDefault();
-    const data = Persist.getBuilds();
-    let postObject = [];
-    for (const ship in data) {
-      for (const code in data[ship]) {
-        const shipModel = ship;
-        if (!shipModel) {
-          throw 'No such ship found: "' + ship + '"';
-        }
-        const shipTemplate = Ships[shipModel];
-        const shipPostObject = {};
-        let shipInstance = new Ship(shipModel, shipTemplate.properties, shipTemplate.slots);
-        shipInstance.buildWith(null);
-        shipInstance.buildFrom(data[ship][code]);
-        shipPostObject.coriolisId = shipInstance.id;
-        shipPostObject.coriolisShip = shipInstance;
-
-        shipPostObject.coriolisShip.url = window.location.origin + outfitURL(shipModel, data[ship][code], code);
-        shipPostObject.title = code || shipInstance.id;
-        shipPostObject.description = code || shipInstance.id;
-        shipPostObject.ShipName = shipInstance.id;
-        shipPostObject.Ship = shipInstance.id;
-        postObject.push(shipPostObject);
-      }
-    }
-    console.log(postObject);
-
-    this.context.showModal(<ModalBatchOrbis
-      ships={postObject}
-    />);
-  }
-
-  /**
    * Show export modal with detailed export
    * @param  {SyntheticEvent} e Event
    */
@@ -346,15 +300,10 @@ export default class Header extends TranslatedComponent {
    * @return {React.Component} Menu
    */
   _getShipsMenu() {
-    let shipList = [];
-
-    for (let s of this.shipOrder) {
-      shipList.push(<ActiveLink key={s} href={outfitURL(s)} className='block'>{Ships[s].properties.name}</ActiveLink>);
-    }
-
+    const { translate } = this.context.language;
     return (
       <div className='menu-list dbl no-wrap' onClick={ (e) => e.stopPropagation() }>
-        {shipList}
+        {this.ships.map((s) => <ActiveLink key={s} href={outfitURL(s)} className='block'>{translate(s)}</ActiveLink>)}
       </div>
     );
   }
@@ -364,9 +313,10 @@ export default class Header extends TranslatedComponent {
    * @return {React.Component} Menu
    */
   _getBuildsMenu() {
+    const { translate } = this.context.language;
     let builds = Persist.getBuilds();
     let buildList = [];
-    for (let shipId of this.shipOrder) {
+    for (let shipId of this.ships) {
       if (builds[shipId]) {
         let shipBuilds = [];
         let buildNameOrder = Object.keys(builds[shipId]).sort();
@@ -374,7 +324,7 @@ export default class Header extends TranslatedComponent {
           let href = outfitURL(shipId, builds[shipId][buildName], buildName);
           shipBuilds.push(<li key={shipId + '-' + buildName} ><ActiveLink href={href} className='block'>{buildName}</ActiveLink></li>);
         }
-        buildList.push(<ul key={shipId}>{Ships[shipId].properties.name}{shipBuilds}</ul>);
+        buildList.push(<ul key={shipId}>{translate(shipId)}{shipBuilds}</ul>);
       }
     }
 
