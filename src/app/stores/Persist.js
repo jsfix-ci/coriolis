@@ -12,7 +12,6 @@ const LS_KEY_MOD_DISCOUNT = 'moduleDiscount';
 const LS_KEY_STATE = 'state';
 const LS_KEY_SIZE_RATIO = 'sizeRatio';
 const LS_KEY_TOOLTIPS = 'tooltips';
-const LS_KEY_MODULE_RESISTANCES = 'moduleResistances';
 const LS_KEY_ROLLS = 'matsPerGrade';
 const LS_KEY_ORBIS = 'orbis';
 
@@ -84,7 +83,6 @@ export class Persist extends EventEmitter {
       LS = null;
     }
 
-    let moduleResistances = _get(LS_KEY_MODULE_RESISTANCES);
     let matsPerGrade = _get(LS_KEY_ROLLS);
     let cmdrName = _get(LS_KEY_CMDR_NAME);
     let tips = _get(LS_KEY_TOOLTIPS);
@@ -113,7 +111,6 @@ export class Persist extends EventEmitter {
     };
     this.cmdrName = cmdrName || { selected: '', cmdrs: [] };
     this.tooltipsEnabled = tips === null ? true : tips;
-    this.moduleResistancesEnabled = moduleResistances === null ? true : moduleResistances;
 
     if (LS) {
       window.addEventListener('storage', this.onStorageChange);
@@ -153,10 +150,6 @@ export class Persist extends EventEmitter {
         case LS_KEY_TOOLTIPS:
           this.tooltipsEnabled = !!newValue && newValue.toLowerCase() == 'true';
           this.emit('tooltips', this.tooltipsEnabled);
-          break;
-        case LS_KEY_MODULE_RESISTANCES:
-          this.moduleResistancesEnabled = !!newValue && newValue.toLowerCase() == 'true';
-          this.emit('moduleresistances', this.moduleResistancesEnabled);
           break;
         case LS_KEY_ROLLS:
           this.matsPerGrade = JSON.parse(newValue);
@@ -222,21 +215,6 @@ export class Persist extends EventEmitter {
     }
 
     return this.tooltipsEnabled;
-  }
-
-  /**
-   * Show module resistances setting
-   * @param  {boolean} show Optional - update setting
-   * @return {boolean} True if module resistances should be shown
-   */
-  showModuleResistances(show) {
-    if (show !== undefined) {
-      this.moduleResistancesEnabled = !!show;
-      _put(LS_KEY_MODULE_RESISTANCES, this.moduleResistancesEnabled);
-      this.emit('moduleresistances', this.moduleResistancesEnabled);
-    }
-
-    return this.moduleResistancesEnabled;
   }
 
   /**
