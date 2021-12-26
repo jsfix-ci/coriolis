@@ -16,7 +16,7 @@ import ModalPermalink from './components/ModalPermalink';
 import AboutPage from './pages/AboutPage';
 import NotFoundPage from './pages/NotFoundPage';
 import OutfittingPage from './pages/OutfittingPage';
-import ComparisonPage from './pages/ComparisonPage';
+// import ComparisonPage from './pages/ComparisonPage';
 import ShipyardPage from './pages/ShipyardPage';
 import ErrorDetails from './pages/ErrorDetails';
 
@@ -76,9 +76,9 @@ export default class Coriolis extends React.Component {
     Router('/outfit/?', (r) => this._setPage(OutfittingPage, r));
     Router('/outfit/:ship/?', (r) => this._setPage(OutfittingPage, r));
     Router('/outfit/:ship/:code?', (r) => this._setPage(OutfittingPage, r));
-    Router('/compare/:name?', (r) => this._setPage(ComparisonPage, r));
-    Router('/comparison?', (r) => this._setPage(ComparisonPage, r));
-    Router('/comparison/:code', (r) => this._setPage(ComparisonPage, r));
+    // Router('/compare/:name?', (r) => this._setPage(ComparisonPage, r));
+    // Router('/comparison?', (r) => this._setPage(ComparisonPage, r));
+    // Router('/comparison/:code', (r) => this._setPage(ComparisonPage, r));
     Router('/about', (r) => this._setPage(AboutPage, r));
     Router('*', (r) => this._setPage(null, r));
   }

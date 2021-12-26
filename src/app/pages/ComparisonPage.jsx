@@ -3,7 +3,6 @@ import Page from './Page';
 import Router from '../Router';
 import cn from 'classnames';
 import { Ships } from 'coriolis-data/dist';
-import Ship from '../shipyard/Ship';
 import { fromComparison, toComparison } from '../shipyard/Serializer';
 import Persist from '../stores/Persist';
 import { SizeMap, ShipFacets } from '../shipyard/Constants';

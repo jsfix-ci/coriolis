@@ -2,11 +2,9 @@ import React from 'react';
 import cn from 'classnames';
 import SlotSection from './SlotSection';
 import Slot from './Slot';
-import Module from '../shipyard/Module';
-import * as ShipRoles from '../shipyard/ShipRoles';
 import autoBind from 'auto-bind';
 import { stopCtxPropagation, moduleGet } from '../utils/UtilityFunctions';
-import { ShipProps } from 'ed-forge';
+import { ShipProps, Module } from 'ed-forge';
 const { CONSUMED_RETR, LADEN_MASS } = ShipProps;
 
 /**

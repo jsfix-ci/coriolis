@@ -1,6 +1,4 @@
 import { ModuleGroupToName, MountMap, BulkheadNames } from './Constants';
-import { Ships } from 'coriolis-data/dist';
-import Ship from './Ship';
 import * as Utils from '../utils/UtilityFunctions';
 import LZString from 'lz-string';
 import { outfitURL } from '../utils/UrlGenerators';
@@ -71,49 +69,6 @@ function slotToSchema(slot) {
   }
   return null;
 }
-
-/**
- * Instantiates a ship from a ship-loadout  object
- * @param  {Object} detailedBuild ship-loadout object
- * @return {Ship} Ship instance
- */
-export function fromDetailedBuild(detailedBuild) {
-  let shipId = Object.keys(Ships).find((shipId) => Ships[shipId].properties.name.toLowerCase() == detailedBuild.ship.toLowerCase());
-  if (!shipId) {
-    throw 'No such ship: ' + detailedBuild.ship;
-  }
-
-  let shipData = Ships[shipId];
-  let ship = new Ship(shipId, shipData.properties, shipData.slots);
-
-  if (!detailedBuild.references[0] || !detailedBuild.references[0].code) {
-    throw 'Missing reference code';
-  }
-
-  ship.buildFrom(detailedBuild.references[0].code);
-
-  return ship;
-}
-
-/**
- * Generates an array of ship-loadout JSON Schema object for export
- * @param  {Array} builds   Array of ship builds
- * @return {Array}         Array of of ship-loadout objects
- */
-export function toDetailedExport(builds) {
-  let data = [];
-
-  for (let shipId in builds) {
-    for (let buildName in builds[shipId]) {
-      let code = builds[shipId][buildName];
-      let shipData = Ships[shipId];
-      let ship = new Ship(shipId, shipData.properties, shipData.slots);
-      ship.buildFrom(code);
-      data.push(toDetailedBuild(buildName, ship, code));
-    }
-  }
-  return data;
-};
 
 /**
  * Serializes a comparion and all of the ships to zipped

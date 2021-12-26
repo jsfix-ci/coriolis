@@ -217,8 +217,8 @@ export default class OutfittingPage extends Page {
     const { ship, buildName, newBuildName } = this.state;
     const shipId = ship.getShipType();
 
-    // If this is a stock ship the code won't be set, so ensure that we have it
-    const code = this.state.code || ship.compress();
+    ship.write('CoriolisBuildName', buildName);
+    const code = ship.compress();
 
     Persist.saveBuild(shipId, newBuildName, code);
     this._setRoute();

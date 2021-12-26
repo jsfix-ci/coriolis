@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import TranslatedComponent from './TranslatedComponent';
-import * as Calc from '../shipyard/Calculations';
 import PieChart from './PieChart';
 import VerticalBarChart from './VerticalBarChart';
 import autoBind from 'auto-bind';

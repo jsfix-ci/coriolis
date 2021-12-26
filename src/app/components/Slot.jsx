@@ -5,7 +5,6 @@ import cn from 'classnames';
 import { ListModifications, Modified } from './SvgIcons';
 import AvailableModulesMenu from './AvailableModulesMenu';
 import ModificationsMenu from './ModificationsMenu';
-import { diffDetails } from '../utils/SlotFunctions';
 import { stopCtxPropagation, wrapCtxMenu } from '../utils/UtilityFunctions';
 import { blueprintTooltip } from '../utils/BlueprintFunctions';
 import { Module } from 'ed-forge';

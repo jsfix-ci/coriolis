@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TranslatedComponent from './TranslatedComponent';
 import { wrapCtxMenu } from '../utils/UtilityFunctions';
-import { canMount } from '../utils/SlotFunctions';
 import { Equalizer } from '../components/SvgIcons';
 import cn from 'classnames';
 import { Ship } from 'ed-forge';

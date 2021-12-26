@@ -1,9 +1,7 @@
 import React from 'react';
 import SlotSection from './SlotSection';
 import Slot from './Slot';
-import * as ModuleUtils from '../shipyard/ModuleUtils';
 import { stopCtxPropagation } from '../utils/UtilityFunctions';
-import { canMount } from '../utils/SlotFunctions';
 import autoBind from 'auto-bind';
 
 /**

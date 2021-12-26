@@ -8,7 +8,6 @@ import cn from 'classnames';
 import { Cogs, CoriolisLogo, Hammer, Help, Rocket, StatsBars } from './SvgIcons';
 import Persist from '../stores/Persist';
 import { toDetailedExport } from '../shipyard/Serializer';
-import Ship from '../shipyard/Ship';
 import ModalBatchOrbis from './ModalBatchOrbis';
 import ModalDeleteAll from './ModalDeleteAll';
 import ModalExport from './ModalExport';
