@@ -556,12 +556,13 @@ export default class Header extends TranslatedComponent {
           {openedMenu == 'comp' ? this._getComparisonsMenu() : null}
         </div>
 
-        <div className='l menu'>
+        {/* TODO: Enable */}
+        {/* <div className='l menu'>
           <div className={cn('menu-header', { selected: openedMenu == 'announce', disabled: this.props.announcements.length === 0 })} onClick={this.props.announcements.length !== 0 && this._openAnnounce}>
             <span className='menu-item-label'>{translate('announcements')}</span>
           </div>
           {openedMenu == 'announce' ? this._getAnnouncementsMenu() : null}
-        </div>
+        </div> */}
 
         {window.location.origin.search('.edcd.io') >= 0 ?
           <div className='l menu'>

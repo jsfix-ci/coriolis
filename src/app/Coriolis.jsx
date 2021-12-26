@@ -68,7 +68,8 @@ export default class Coriolis extends React.Component {
       route: {},
       sizeRatio: Persist.getSizeRatio()
     };
-    this._getAnnouncements();
+    // TODO: New mechanism for announcements
+    // this._getAnnouncements();
     Router('', (r) => this._setPage(ShipyardPage, r));
     Router('/import?', (r) => this._importBuild(r));
     Router('/import/:data', (r) => this._importBuild(r));
@@ -98,15 +99,15 @@ export default class Coriolis extends React.Component {
     }
   }
 
-  async _getAnnouncements() {
-    try {
-      const announces = await request.get('https://orbis.zone/api/announcement')
-        .query({ showInCoriolis: true });
-      this.setState({ announcements: announces.body });
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  // async _getAnnouncements() {
+  //   try {
+  //     const announces = await request.get('https://orbis.zone/api/announcement')
+  //       .query({ showInCoriolis: true });
+  //     this.setState({ announcements: announces.body });
+  //   } catch (err) {
+  //     console.error(err)
+  //   }
+  // }
 
   /**
    * Updates / Sets the page and route context
@@ -383,11 +384,12 @@ export default class Coriolis extends React.Component {
     let currentMenu = this.state.currentMenu;
 
     return <div style={{ minHeight: '100%' }} onClick={this._closeMenu}
-                className={this.state.noTouch ? 'no-touch' : null}>
+      className={this.state.noTouch ? 'no-touch' : null}
+    >
       <Header announcements={this.state.announcements} appCacheUpdate={this.state.appCacheUpdate}
-              currentMenu={currentMenu}/>
-      <div className="announcement-container">{this.state.announcements.map(a => <Announcement
-        text={a.message}/>)}</div>
+        currentMenu={currentMenu}/>
+      {/* <div className="announcement-container">{this.state.announcements.map(a => <Announcement
+        text={a.message}/>)}</div> */}
       {this.state.error ? this.state.error : this.state.page ? React.createElement(this.state.page, { currentMenu }) :
         <NotFoundPage/>}
       {this.state.modal}
@@ -395,7 +397,7 @@ export default class Coriolis extends React.Component {
       <footer>
         <div className="right cap">
           <a href="https://github.com/EDCD/coriolis" target="_blank" rel="noopener noreferrer"
-             title="Coriolis Github Project">{window.CORIOLIS_VERSION} - {window.CORIOLIS_DATE}</a>
+            title="Coriolis Github Project">{window.CORIOLIS_VERSION} - {window.CORIOLIS_DATE}</a>
           <br/>
           <a
             href={'https://github.com/EDCD/coriolis/compare/edcd:develop@{' + window.CORIOLIS_DATE + '}...edcd:develop'}
