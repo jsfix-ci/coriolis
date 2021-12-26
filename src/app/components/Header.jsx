@@ -548,13 +548,6 @@ export default class Header extends TranslatedComponent {
           {openedMenu == 'b' ? this._getBuildsMenu() : null}
         </div>
 
-        <div className='l menu'>
-          <div className={cn('menu-header', { selected: openedMenu == 'comp', disabled: !hasBuilds })} onClick={hasBuilds && this._openComp}>
-            <StatsBars className={cn('warning', { 'warning-disabled': !hasBuilds })} /><span className='menu-item-label'>{translate('compare')}</span>
-          </div>
-          {openedMenu == 'comp' ? this._getComparisonsMenu() : null}
-        </div>
-
         {/* TODO: Enable */}
         {/* <div className='l menu'>
           <div className={cn('menu-header', { selected: openedMenu == 'announce', disabled: this.props.announcements.length === 0 })} onClick={this.props.announcements.length !== 0 && this._openAnnounce}>

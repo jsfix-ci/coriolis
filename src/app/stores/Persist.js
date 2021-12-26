@@ -2,7 +2,6 @@ import { EventEmitter } from 'fbemitter';
 import { Insurance } from '../shipyard/Constants';
 
 const LS_KEY_BUILDS = 'builds';
-const LS_KEY_COMPARISONS = 'comparisons';
 const LS_KEY_LANG = 'NG_TRANSLATE_LANG_KEY';
 const LS_KEY_COST_TAB = 'costTab';
 const LS_KEY_CMDR_NAME = 'cmdrName';
@@ -93,7 +92,6 @@ export class Persist extends EventEmitter {
     let shipDiscount = _get(LS_KEY_SHIP_DISCOUNT);
     let moduleDiscount = _get(LS_KEY_MOD_DISCOUNT);
     let buildJson = _get(LS_KEY_BUILDS);
-    let comparisonJson = _get(LS_KEY_COMPARISONS);
 
     this.orbisCreds = _get(LS_KEY_ORBIS) || { email: '', password: '' };
     this.onStorageChange = this.onStorageChange.bind(this);
@@ -102,7 +100,6 @@ export class Persist extends EventEmitter {
     this.shipDiscount = !isNaN(shipDiscount) && shipDiscount < 1 ? shipDiscount * 1 : 0;
     this.moduleDiscount = !isNaN(moduleDiscount) && moduleDiscount < 1 ? moduleDiscount * 1 : 0;
     this.builds = buildJson && typeof buildJson == 'object' ? buildJson : {};
-    this.comparisons = comparisonJson && typeof comparisonJson == 'object' ? comparisonJson : {};
     this.costTab = _getString(LS_KEY_COST_TAB);
     this.outfittingTab = _getString(LS_KEY_OUTFITTING_TAB);
     this.state =  _get(LS_KEY_STATE);
@@ -136,10 +133,6 @@ export class Persist extends EventEmitter {
         case LS_KEY_BUILDS:
           this.builds = newValue ? JSON.parse(newValue) : {};
           this.emit('builds');
-          break;
-        case LS_KEY_COMPARISONS:
-          this.comparisons = newValue ? JSON.parse(newValue) : {};
-          this.emit('comparisons');
           break;
         case LS_KEY_LANG:
           this.langCode = newValue;
@@ -334,97 +327,16 @@ export class Persist extends EventEmitter {
         delete this.builds[shipId];
       }
       _put(LS_KEY_BUILDS, this.builds);
-      // Check if the build was used in existing comparisons
-      let comps = this.comparisons;
-      for (let c in comps) {
-        for (let i = 0; i < comps[c].builds.length; i++) {  // For all builds in the current comparison
-          if (comps[c].builds[i].shipId == shipId && comps[c].builds[i].buildName == name) {
-            comps[c].builds.splice(i, 1);
-            break;  // A build is unique per comparison
-          }
-        }
-      }
-      _put(LS_KEY_COMPARISONS, this.comparisons);
       this.emit('builds');
     }
   }
 
   /**
-   * Persist a comparison in localstorage.
-   *
-   * @param  {String} name   The name of the comparison
-   * @param  {array} builds  Array of builds
-   * @param  {array} facets  Array of facet indices
-   */
-  saveComparison(name, builds, facets) {
-    if (!this.comparisons[name]) {
-      this.comparisons[name] = {};
-    }
-    this.comparisons[name] = {
-      facets,
-      builds: builds.map(b => { return { shipId: b.id || b.shipId, buildName: b.buildName }; })
-    };
-    _put(LS_KEY_COMPARISONS, this.comparisons);
-    this.emit('comparisons');
-  }
-
-  /**
-   * Get a comparison
-   * @param  {String} name Comparison name
-   * @return {Object}      Object containing array of facets and ship id + build names
-   */
-  getComparison(name) {
-    if (this.comparisons[name]) {
-      return this.comparisons[name];
-    }
-    return null;
-  }
-
-  /**
-   * Get all saved comparisons
-   * @return {Object} All comparisons
-   */
-  getComparisons() {
-    return this.comparisons;
-  }
-
-  /**
-   * Check if a comparison has been saved
-   * @param  {String}  name Comparison name
-   * @return {Boolean}      True if a comparison has been saved
-   */
-  hasComparison(name) {
-    return !!this.comparisons[name];
-  }
-
-  /**
-   * Check if any comparisons have been saved
-   * @return {Boolean} True if any comparisons have been saved
-   */
-  hasComparisons() {
-    return Object.keys(this.comparisons).length > 0;
-  }
-
-  /**
-   * Removes the comparison from localstorage.
-   * @param  {String} name Comparison name
-   */
-  deleteComparison(name) {
-    if (this.comparisons[name]) {
-      delete this.comparisons[name];
-      _put(LS_KEY_COMPARISONS, this.comparisons);
-      this.emit('comparisons');
-    }
-  }
-
-  /**
-   * Delete all builds and comparisons from localStorage
+   * Delete all builds from localStorage
    */
   deleteAll() {
     this.builds = {};
-    this.comparisons = {};
     _put(LS_KEY_BUILDS, {});
-    _put(LS_KEY_COMPARISONS, {});
     this.emit('deletedAll');
   }
 
@@ -435,7 +347,6 @@ export class Persist extends EventEmitter {
   getAll() {
     let data = {};
     data[LS_KEY_BUILDS] = this.getBuilds();
-    data[LS_KEY_COMPARISONS] = this.getComparisons();
     data[LS_KEY_INSURANCE] = this.getInsurance();
     data[LS_KEY_SHIP_DISCOUNT] = this.shipDiscount;
     data[LS_KEY_MOD_DISCOUNT] = this.moduleDiscount;
