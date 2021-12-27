@@ -2,7 +2,7 @@ import React from 'react';
 import Page from './Page';
 import cn from 'classnames';
 import { Factory } from 'ed-forge';
-import { JUMP_METRICS } from 'ed-forge/lib/ship-stats';
+import { JUMP_METRICS } from 'ed-forge/lib/src/ship-stats';
 import { SizeMap } from '../shipyard/Constants';
 import Link from '../components/Link';
 

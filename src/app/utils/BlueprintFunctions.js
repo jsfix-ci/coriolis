@@ -1,6 +1,6 @@
 import React from 'react';
 import { Module } from 'ed-forge';
-import { getBlueprintInfo, getExperimentalInfo } from 'ed-forge/lib/data/blueprints';
+import { getBlueprintInfo, getExperimentalInfo } from 'ed-forge/lib/src/data/blueprints';
 import { fromPairs, keys, uniq } from 'lodash';
 
 /**

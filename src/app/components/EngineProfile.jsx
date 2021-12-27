@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TranslatedComponent from './TranslatedComponent';
 import LineChart from '../components/LineChart';
-import { getBoostMultiplier, getSpeedMultipliers } from 'ed-forge/lib/stats/SpeedProfile';
+import { getBoostMultiplier, getSpeedMultipliers } from 'ed-forge/lib/src/stats/SpeedProfile';
 import { ShipProps } from 'ed-forge';
 const { LADEN_MASS } = ShipProps;
 

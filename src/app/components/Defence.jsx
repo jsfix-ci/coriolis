@@ -4,7 +4,7 @@ import TranslatedComponent from './TranslatedComponent';
 import PieChart from './PieChart';
 import VerticalBarChart from './VerticalBarChart';
 import autoBind from 'auto-bind';
-import { ARMOUR_METRICS, MODULE_PROTECTION_METRICS, SHIELD_METRICS } from 'ed-forge/lib/ship-stats';
+import { ARMOUR_METRICS, MODULE_PROTECTION_METRICS, SHIELD_METRICS } from 'ed-forge/lib/src/ship-stats';
 
 /**
  * Defence information

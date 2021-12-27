@@ -5,7 +5,7 @@ import PieChart from './PieChart';
 import { MountFixed, MountGimballed, MountTurret } from './SvgIcons';
 import { Ship } from 'ed-forge';
 import autoBind from 'auto-bind';
-import { DAMAGE_METRICS } from 'ed-forge/lib/ship-stats';
+import { DAMAGE_METRICS } from 'ed-forge/lib/src/ship-stats';
 import { clone, mapValues, mergeWith, reverse, sortBy, sum, toPairs, values } from 'lodash';
 
 /**

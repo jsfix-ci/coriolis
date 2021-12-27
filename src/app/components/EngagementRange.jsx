@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TranslatedComponent from './TranslatedComponent';
 import Slider from '../components/Slider';
-import { moduleReduce } from 'ed-forge/lib/helper';
+import { moduleReduce } from 'ed-forge/lib/src/helper';
 
 /**
  * Engagement range slider

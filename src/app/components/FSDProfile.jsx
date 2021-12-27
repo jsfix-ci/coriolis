@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TranslatedComponent from './TranslatedComponent';
 import LineChart from '../components/LineChart';
-import { calculateJumpRange } from 'ed-forge/lib/stats/JumpRangeProfile';
+import { calculateJumpRange } from 'ed-forge/lib/src/stats/JumpRangeProfile';
 import { ShipProps } from 'ed-forge';
 const { LADEN_MASS } = ShipProps;
 

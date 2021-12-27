@@ -5,7 +5,7 @@ import cn from 'classnames';
 import TranslatedComponent from './TranslatedComponent';
 import { wrapCtxMenu } from '../utils/UtilityFunctions';
 import { Ship } from 'ed-forge';
-import { POWER_METRICS } from 'ed-forge/lib/ship-stats';
+import { POWER_METRICS } from 'ed-forge/lib/src/ship-stats';
 import autoBind from 'auto-bind';
 
 /**

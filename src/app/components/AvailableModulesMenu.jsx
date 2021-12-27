@@ -5,7 +5,7 @@ import { stopCtxPropagation } from '../utils/UtilityFunctions';
 import cn from 'classnames';
 import { MountFixed, MountGimballed, MountTurret } from './SvgIcons';
 import FuzzySearch from 'react-fuzzy';
-import { getModuleInfo } from 'ed-forge/lib/data/items';
+import { getModuleInfo } from 'ed-forge/lib/src/data/items';
 import { groupBy, mapValues, sortBy } from 'lodash';
 import autoBind from 'auto-bind';
 

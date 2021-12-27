@@ -5,7 +5,7 @@ import Page from './Page';
 import Router from '../Router';
 import Persist from '../stores/Persist';
 import { Factory, Ship } from 'ed-forge';
-import { OBJECT_EVENT } from 'ed-forge/lib/Ship';
+import { OBJECT_EVENT } from 'ed-forge/lib/src/Ship';
 import { outfitURL } from '../utils/UrlGenerators';
 import {
   FloppyDisk,

@@ -8,7 +8,7 @@ import TranslatedComponent from './TranslatedComponent';
 import { ShoppingIcon } from './SvgIcons';
 import autoBind from 'auto-bind';
 import { assign, differenceBy, sortBy, reverse } from 'lodash';
-import { FUEL_CAPACITY } from 'ed-forge/lib/ship-stats';
+import { FUEL_CAPACITY } from 'ed-forge/lib/src/ship-stats';
 
 /**
  * Cost Section

@@ -8,7 +8,7 @@ import ModificationsMenu from './ModificationsMenu';
 import { stopCtxPropagation, wrapCtxMenu } from '../utils/UtilityFunctions';
 import { blueprintTooltip } from '../utils/BlueprintFunctions';
 import { Module } from 'ed-forge';
-import { TYPES } from 'ed-forge/lib/data/slots';
+import { TYPES } from 'ed-forge/lib/src/data/slots';
 import autoBind from 'auto-bind';
 import { toPairs } from 'lodash';
 

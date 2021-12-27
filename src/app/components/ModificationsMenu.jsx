@@ -9,8 +9,8 @@ import {
   blueprintTooltip,
   specialToolTip
 } from '../utils/BlueprintFunctions';
-import { getBlueprintInfo, getExperimentalInfo } from 'ed-forge/lib/data/blueprints';
-import { getModuleInfo } from 'ed-forge/lib/data/items';
+import { getBlueprintInfo, getExperimentalInfo } from 'ed-forge/lib/src/data/blueprints';
+import { getModuleInfo } from 'ed-forge/lib/src/data/items';
 import { SHOW } from '../shipyard/StatsMapping';
 
 /**

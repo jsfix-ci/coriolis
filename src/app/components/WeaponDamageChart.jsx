@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import TranslatedComponent from './TranslatedComponent';
 import LineChart from '../components/LineChart';
-import { moduleReduce } from 'ed-forge/lib/helper';
+import { moduleReduce } from 'ed-forge/lib/src/helper';
 import { chain, keys, mapValues, values } from 'lodash';
 
 const DAMAGE_DEALT_COLORS = ['#FFFFFF', '#FF0000', '#00FF00', '#7777FF', '#FFFF00', '#FF00FF', '#00FFFF', '#777777'];

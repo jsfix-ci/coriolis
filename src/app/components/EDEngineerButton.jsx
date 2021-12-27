@@ -2,7 +2,7 @@ import React from 'react';
 import autoBind from 'auto-bind';
 import Persist from '../stores/Persist';
 import PropTypes from 'prop-types';
-import { getBlueprintUuid, getExperimentalUuid } from 'ed-forge/lib/data/blueprints';
+import { getBlueprintUuid, getExperimentalUuid } from 'ed-forge/lib/src/data/blueprints';
 import { Loader, MatIcon } from '../components/SvgIcons';
 import request from 'superagent';
 import { chain, entries } from 'lodash';
