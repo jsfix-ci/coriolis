@@ -3,6 +3,25 @@ import SlotSection from './SlotSection';
 import Slot from './Slot';
 import { stopCtxPropagation } from '../utils/UtilityFunctions';
 import autoBind from 'auto-bind';
+import { TYPES } from 'ed-forge/lib/src/data/slots';
+
+/**
+ * Sets all empty slots of a ship to a item of the given size.
+ * @param {Ship} ship Ship to set items for
+ * @param {boolean} fillAll True to also fill occupied
+ * @param {string} type Item type
+ * @param {string} rating Item rating
+ */
+function setAllEmpty(ship, fillAll, type, rating = '') {
+  ship.getModules(TYPES.ANY_INTERNAL, undefined, true).forEach((slot) => {
+    if (slot.isEmpty() || fillAll) {
+      try {
+        // Maybe the item does not exist. Simply catch this error.
+        slot.setItem(type, slot.getSize(), rating);
+      } catch (e) {}
+    }
+  });
+}
 
 /**
  * Internal slot section
@@ -21,8 +40,7 @@ export default class InternalSlotSection extends SlotSection {
    * Empty all slots
    */
   _empty() {
-    // TODO:
-    // this.props.ship.emptyInternal();
+    this.props.ship.getModules(TYPES.ANY_INTERNAL).forEach((slot) => slot.reset());
     this._close();
   }
 
@@ -31,13 +49,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithCargo(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'cr')) {
-        ship.use(slot, ModuleUtils.findInternal('cr', slot.maxClass, 'E'));
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'cargorack');
     this._close();
   }
 
@@ -46,13 +59,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithFuelTanks(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'ft')) {
-        ship.use(slot, ModuleUtils.findInternal('ft', slot.maxClass, 'C'));
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'fueltank', '3');
     this._close();
   }
 
@@ -61,13 +69,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithLuxuryCabins(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'pcq')) {
-        ship.use(slot, ModuleUtils.findInternal('pcq', Math.min(slot.maxClass, 6), 'B')); // Passenger cabins top out at 6
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'passengercabins', '4');
     this._close();
   }
 
@@ -76,13 +79,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithFirstClassCabins(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'pcm')) {
-        ship.use(slot, ModuleUtils.findInternal('pcm', Math.min(slot.maxClass, 6), 'C')); // Passenger cabins top out at 6
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'passengercabins', '3');
     this._close();
   }
 
@@ -91,13 +89,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithBusinessClassCabins(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'pci')) {
-        ship.use(slot, ModuleUtils.findInternal('pci', Math.min(slot.maxClass, 6), 'D')); // Passenger cabins top out at 6
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'passengercabins', '2');
     this._close();
   }
 
@@ -106,13 +99,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithEconomyClassCabins(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'pce')) {
-        ship.use(slot, ModuleUtils.findInternal('pce', Math.min(slot.maxClass, 6), 'E')); // Passenger cabins top out at 6
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'passengercabins', '1');
     this._close();
   }
 
@@ -121,16 +109,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithCells(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    let chargeCap = 0; // Capacity of single activation
-    ship.internal.forEach(function(slot) {
-      if ((clobber && !(slot.m && ModuleUtils.isShieldGenerator(slot.m.grp)) || !slot.m) && canMount(ship, slot, 'scb')) {
-        ship.use(slot, ModuleUtils.findInternal('scb', slot.maxClass, 'A'));
-        ship.setSlotEnabled(slot, chargeCap <= ship.shieldStrength); // Don't waste cell capacity on overcharge
-        chargeCap += slot.m.recharge;
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'scb', '5');
     this._close();
   }
 
@@ -139,13 +119,8 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithArmor(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'hr')) {
-        ship.use(slot, ModuleUtils.findInternal('hr', Math.min(slot.maxClass, 5), 'D')); // Hull reinforcements top out at 5D
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'hrp', '2');
     this._close();
   }
 
@@ -154,21 +129,9 @@ export default class InternalSlotSection extends SlotSection {
    * @param  {SyntheticEvent} event Event
    */
   _fillWithModuleReinforcementPackages(event) {
-    let clobber = event.getModifierState('Alt');
-    let ship = this.props.ship;
-    ship.internal.forEach((slot) => {
-      if ((clobber || !slot.m) && canMount(ship, slot, 'mrp')) {
-        ship.use(slot, ModuleUtils.findInternal('mrp', Math.min(slot.maxClass, 5), 'D')); // Module reinforcements top out at 5D
-      }
-    });
+    const fillAll = event.getModifierState('Alt');
+    setAllEmpty(this.props.ship, fillAll, 'mrp', '2');
     this._close();
-  }
-
-  /**
-   * Empty all on section header right click
-   */
-  _contextMenu() {
-    this._empty();
   }
 
   /**
@@ -217,7 +180,7 @@ export default class InternalSlotSection extends SlotSection {
         <li className='lc' tabIndex='0' onClick={this._fillWithEconomyClassCabins}>{translate('pce')}</li>
         <li className='lc' tabIndex='0' onClick={this._fillWithBusinessClassCabins}>{translate('pci')}</li>
         <li className='lc' tabIndex='0' onClick={this._fillWithFirstClassCabins} onKeyDown={ship.luxuryCabins ? '' : this._keyDown}>{translate('pcm')}</li>
-        { ship.luxuryCabins ? <li className='lc' tabIndex='0' onClick={this._fillWithLuxuryCabins}>{translate('pcq')}</li> : ''}
+        { ship.readMeta('luxuryCabins') ? <li className='lc' tabIndex='0' onClick={this._fillWithLuxuryCabins}>{translate('pcq')}</li> : ''}
         <li className='optional-hide' style={{ textAlign: 'center', marginTop: '1em' }}>{translate('PHRASE_ALT_ALL')}</li>
       </ul>
     </div>;

@@ -5,6 +5,8 @@ import { MountFixed, MountGimballed, MountTurret } from '../components/SvgIcons'
 import { stopCtxPropagation } from '../utils/UtilityFunctions';
 import autoBind from 'auto-bind';
 
+const SIZE_ORDER = ['huge', 'large', 'medium', 'small'];
+
 /**
  * Hardpoint slot section
  */
@@ -22,28 +24,35 @@ export default class HardpointSlotSection extends SlotSection {
    * Empty all slots
    */
   _empty() {
-    // TODO:
-    // this.props.ship.emptyWeapons();
+    this.props.ship.getHardpoints(undefined, true).forEach((slot) => slot.reset());
     this._close();
   }
 
   /**
    * Fill slots with specified module
-   * @param  {string} group           Group name
-   * @param  {string} mount           Mount Type - F, G, T
-   * @param  {SyntheticEvent} event   Event
+   * @param  {string} type Type of item
+   * @param  {string} rating Mount Type - (fixed, gimbal, turret)
+   * @param  {SyntheticEvent} event Event
    */
-  _fill(group, mount, event) {
-    // TODO:
-    // this.props.ship.useWeapon(group, mount, null, event.getModifierState('Alt'));
+  _fill(type, rating, event) {
+    const fillAll = event.getModifierState('Alt');
+    this.props.ship.getHardpoints(undefined, true).forEach((slot) => {
+      if (slot.isEmpty() || fillAll) {
+        const slotSize = slot.getSize();
+        const fittingSizes = SIZE_ORDER.slice(SIZE_ORDER.findIndex((e) => e === slotSize));
+        for (const size of fittingSizes) {
+          try {
+            slot.setItem(type, size, rating);
+          } catch (err) {
+            // Try next item if this doesn't fit/exist
+            continue;
+          }
+          // If still here, we were able to apply the module
+          break;
+        }
+      }
+    });
     this._close();
-  }
-
-  /**
-   * Empty all on section header right click
-   */
-  _contextMenu() {
-    this._empty();
   }
 
   /**
@@ -58,7 +67,6 @@ export default class HardpointSlotSection extends SlotSection {
     for (let h of ship.getHardpoints(undefined, true)) {
       slots.push(<Slot
         key={h.object.Slot}
-        maxClass={h.getSize()}
         currentMenu={currentMenu}
         drag={this._drag.bind(this, h)}
         dragOver={this._dragOverSlot.bind(this, h)}
@@ -85,61 +93,61 @@ export default class HardpointSlotSection extends SlotSection {
 
     return <div className='select hardpoint' onClick={(e) => e.stopPropagation()} onContextMenu={stopCtxPropagation}>
       <ul>
-        <li className='lc' tabIndex="0" onClick={this._empty} ref={smRef => this.sectionRefArr['emptyall'] = smRef}>{translate('empty all')}</li>
+        <li className='lc' tabIndex="0" onClick={this._empty}>{translate('empty all')}</li>
         <li className='optional-hide' style={{ textAlign: 'center', marginTop: '1em' }}>{translate('PHRASE_ALT_ALL')}</li>
       </ul>
-      <div className='select-group cap'>{translate('pl')}</div>
+      <div className='select-group cap'>{translate('pulselaser')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'pl', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'pl', 'G')}><MountGimballed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'pl', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'pulselaser', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'pulselaser', 'gimbal')}><MountGimballed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'pulselaser', 'turret')}><MountTurret className='lg'/></li>
       </ul>
-      <div className='select-group cap'>{translate('ul')}</div>
+      <div className='select-group cap'>{translate('burstlaser')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'ul', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'ul', 'G')}><MountGimballed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'ul', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'burstlaser', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'burstlaser', 'gimbal')}><MountGimballed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'burstlaser', 'turret')}><MountTurret className='lg'/></li>
       </ul>
-      <div className='select-group cap'>{translate('bl')}</div>
+      <div className='select-group cap'>{translate('beamlaser')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'bl', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'bl', 'G')}><MountGimballed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'bl', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'beamlaser', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'beamlaser', 'gimbal')}><MountGimballed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'beamlaser', 'turret')}><MountTurret className='lg'/></li>
       </ul>
-      <div className='select-group cap'>{translate('mc')}</div>
+      <div className='select-group cap'>{translate('multicannon')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'mc', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'mc', 'G')}><MountGimballed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'mc', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'multicannon', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'multicannon', 'gimbal')}><MountGimballed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'multicannon', 'turret')}><MountTurret className='lg'/></li>
       </ul>
-      <div className='select-group cap'>{translate('c')}</div>
+      <div className='select-group cap'>{translate('cannon')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'c', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'c', 'G')}><MountGimballed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'c', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'cannon', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'cannon', 'gimbal')}><MountGimballed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'cannon', 'turret')}><MountTurret className='lg'/></li>
       </ul>
-      <div className='select-group cap'>{translate('fc')}</div>
+      <div className='select-group cap'>{translate('fragcannon')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'fc', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'fc', 'G')}><MountGimballed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'fc', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'fragcannon', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'fragcannon', 'gimbal')}><MountGimballed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'fragcannon', 'turret')}><MountTurret className='lg'/></li>
       </ul>
-      <div className='select-group cap'>{translate('pa')}</div>
+      <div className='select-group cap'>{translate('plasmaacc')}</div>
       <ul>
-        <li className='lc' tabIndex="0"  onClick={_fill.bind(this, 'pa', 'F')}>{translate('pa')}</li>
+        <li className='lc' tabIndex="0"  onClick={_fill.bind(this, 'plasmaacc', 'fixed')}>{translate('pa')}</li>
       </ul>
-      <div className='select-group cap'>{translate('rg')}</div>
+      <div className='select-group cap'>{translate('railgun')}</div>
       <ul>
-        <li className='lc' tabIndex="0"  onClick={_fill.bind(this, 'rg', 'F')}>{translate('rg')}</li>
+        <li className='lc' tabIndex="0"  onClick={_fill.bind(this, 'railgun', 'fixed')}>{translate('rg')}</li>
       </ul>
-      <div className='select-group cap'>{translate('nl')}</div>
+      <div className='select-group cap'>{translate('minelauncher')}</div>
       <ul>
-        <li className='lc' tabIndex="0" onClick={_fill.bind(this, 'nl', 'F')}>{translate('nl')}</li>
+        <li className='lc' tabIndex="0" onClick={_fill.bind(this, 'minelauncher', 'fixed')}>{translate('nl')}</li>
       </ul>
-      <div className='select-group cap'>{translate('rfl')}</div>
+      <div className='select-group cap'>{translate('flaklauncher')}</div>
       <ul>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'rfl', 'F')}><MountFixed className='lg'/></li>
-        <li className="c" tabIndex="0" onClick={_fill.bind(this, 'rfl', 'T')}><MountTurret className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'flaklauncher', 'fixed')}><MountFixed className='lg'/></li>
+        <li className="c hardpoint" tabIndex="0" onClick={_fill.bind(this, 'flaklauncher', 'turret')}><MountTurret className='lg'/></li>
       </ul>
     </div>;
   }

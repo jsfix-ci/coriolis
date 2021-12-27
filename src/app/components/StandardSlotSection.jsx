@@ -1,10 +1,10 @@
 import React from 'react';
-import cn from 'classnames';
 import SlotSection from './SlotSection';
 import Slot from './Slot';
 import autoBind from 'auto-bind';
 import { stopCtxPropagation, moduleGet } from '../utils/UtilityFunctions';
 import { ShipProps, Module } from 'ed-forge';
+import { getModuleInfo } from 'ed-forge/lib/src/data/items';
 const { CONSUMED_RETR, LADEN_MASS } = ShipProps;
 
 /**
@@ -22,63 +22,33 @@ export default class StandardSlotSection extends SlotSection {
   }
 
   /**
-   * Use the lightest/optimal available standard modules
+   * Resets all modules of the ship
    */
-  _optimizeStandard() {
-    this.props.ship.useLightestStandard();
+  _emptyAll() {
+    this.props.ship.getModules().forEach((slot) => slot.reset());
     this._close();
   }
 
   /**
-   * Fill all standard slots with the specificed rating (using max class)
-   * @param  {Boolean} shielded True if shield generator should be included
-   * @param {integer} bulkheadIndex Bulkhead to use see Constants.BulkheadNames
+   * Sets all modules to a specific rating
+   * @param {string} rating Module rating to set
+   * @param {string} fsdPPException Custom rating for FSD
    */
-  _multiPurpose(shielded, bulkheadIndex) {
-    ShipRoles.multiPurpose(this.props.ship, shielded, bulkheadIndex);
+  _nRated(rating, fsdPPException) {
+    const { ship } = this.props;
+    const pp = ship.getPowerPlant();
+    pp.setItem('powerplant', pp.getSize(), fsdPPException || rating);
+    const eng = ship.getThrusters();
+    eng.setItem('thrusters', eng.getSize(), rating);
+    const fsd = ship.getFSD();
+    fsd.setItem('fsd', fsd.getSize(), fsdPPException || rating);
+    const ls = ship.getLifeSupport();
+    ls.setItem('lifesupport', ls.getSize(), rating);
+    const pd = ship.getPowerDistributor();
+    pd.setItem('powerdistributor', pd.getSize(), rating);
+    const sen = ship.getSensors();
+    sen.setItem('sensors', sen.getSize(), rating);
     this._close();
-  }
-
-  /**
-   * Trader Build
-   * @param  {Boolean} shielded True if shield generator should be included
-   */
-  _optimizeCargo(shielded) {
-    ShipRoles.trader(this.props.ship, shielded);
-    this._close();
-  }
-
-  /**
-   * Miner Build
-   * @param  {Boolean} shielded True if shield generator should be included
-   */
-  _optimizeMiner(shielded) {
-    ShipRoles.miner(this.props.ship, shielded);
-    this._close();
-  }
-
-  /**
-   * Explorer role
-   * @param  {Boolean} planetary True if Planetary Vehicle Hangar (PVH) should be included
-   */
-  _optimizeExplorer(planetary) {
-    ShipRoles.explorer(this.props.ship, planetary);
-    this._close();
-  }
-
-  /**
-   * Racer role
-   */
-  _optimizeRacer() {
-    ShipRoles.racer(this.props.ship);
-    this._close();
-  }
-
-  /**
-   * On right click optimize the standard modules
-   */
-  _contextMenu() {
-    this._optimizeStandard();
   }
 
   /**
@@ -134,17 +104,13 @@ export default class StandardSlotSection extends SlotSection {
     const { translate } = this.context.language;
     return <div className='select' onClick={(e) => e.stopPropagation()} onContextMenu={stopCtxPropagation}>
       <ul>
-        <li className='lc' tabIndex="0" onClick={this._optimizeStandard}>{translate('Maximize Jump Range')}</li>
+        <li className='lc' tabIndex="0" onClick={this._emptyAll}>{translate('empty all slots')}</li>
       </ul>
-      <div className='select-group cap'>{translate('roles')}</div>
+      <div className='select-group cap'>{translate('core')}</div>
       <ul>
-        <li className='lc' tabIndex="0" onClick={this._multiPurpose.bind(this, false, 0)}>{translate('Multi-purpose')}</li>
-        <li className='lc' tabIndex="0" onClick={this._multiPurpose.bind(this, true, 2)}>{translate('Combat')}</li>
-        <li className='lc' tabIndex="0" onClick={this._optimizeCargo.bind(this, true)}>{translate('Trader')}</li>
-        <li className='lc' tabIndex="0" onClick={this._optimizeExplorer.bind(this, false)}>{translate('Explorer')}</li>
-        <li className='lc' tabIndex="0" onClick={this._optimizeExplorer.bind(this, true)}>{translate('Planetary Explorer')}</li>
-        <li className='lc' tabIndex="0" onClick={this._optimizeMiner.bind(this, true)}>{translate('Miner')}</li>
-        <li className='lc' tabIndex="0" onClick={this._optimizeRacer.bind(this)}>{translate('Racer')}</li>
+        <li className='lc' tabIndex="0" onClick={this._nRated.bind(this, '5', undefined)}>{translate('A-rated')}</li>
+        <li className='lc' tabIndex="0" onClick={this._nRated.bind(this, '2', undefined)}>{translate('D-rated')}</li>
+        <li className='lc' tabIndex="0" onClick={this._nRated.bind(this, '2', '5')}>{translate('D-rated + A-rated FSD/PP')}</li>
       </ul>
     </div>;
   }
