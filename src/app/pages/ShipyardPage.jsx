@@ -52,13 +52,13 @@ function shipSummary(shipId) {
 
   // Count Hardpoints by class
   ship.getHardpoints(undefined, true).forEach(hardpoint => {
-    summary.hp[hardpoint.getSize()]++;
+    summary.hp[hardpoint.getSizeNum()]++;
     summary.hpCount++;
   });
   // Count Internal Compartments by class
   let maxCargo = 0, maxPassengers = 0;
   ship.getInternals(undefined, true).forEach(internal => {
-    const size = String(internal.getSize());
+    const size = String(internal.getSizeNum());
     summary.int[size]++;
     summary.intCount++;
 

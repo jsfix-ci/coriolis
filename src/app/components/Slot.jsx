@@ -166,7 +166,7 @@ export default class Slot extends TranslatedComponent {
    */
   _getMaxClassLabel() {
     const { m } = this.props;
-    let size = m.getSize();
+    let size = m.getSizeNum();
     switch (true) {
       case m.getSlot() === 'armour':
         return '';
