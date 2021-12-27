@@ -15,44 +15,11 @@
     "clean": "rimraf build",
     "start": "node devServer.js",
     "lint": "eslint --ext .js,.jsx src",
-    "test": "jest",
     "prod-serve": "nginx -p $(pwd) -c nginx.conf",
     "prod-stop": "kill -QUIT $(cat nginx.pid)",
     "build": "npm run clean && cross-env NODE_ENV=production webpack -p --config webpack.config.prod.js",
     "rsync": "rsync -ae \"ssh -i $CORIOLIS_PEM\" --delete build/ $CORIOLIS_USER@$CORIOLIS_HOST:~/wwws",
     "deploy": "npm run lint && npm test && npm run build && npm run rsync"
-  },
-  "jest": {
-    "transform": {
-      ".*": "<rootDir>/node_modules/babel-jest"
-    },
-    "testRegex": "(/__tests__/test-.*|\\.(test|spec))\\.js$",
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "jsx"
-    ],
-    "automock": true,
-    "bail": false,
-    "unmockedModulePathPatterns": [
-      "<rootDir>/node_modules/lodash",
-      "<rootDir>/node_modules/react",
-      "<rootDir>/node_modules/react-dom",
-      "<rootDir>/node_modules/react-transition-group",
-      "<rootDir>/node_modules/react-testutils-additions",
-      "<rootDir>/node_modules/fbjs",
-      "<rootDir>/node_modules/fbemitter",
-      "<rootDir>/node_modules/classnames",
-      "<rootDir>/node_modules/d3",
-      "<rootDir>/node_modules/lz-string",
-      "<rootDir>/node_modules/jsen",
-      "coriolis-data",
-      "<rootDir>/src/app/shipyard",
-      "<rootDir>/src/app/i18n",
-      "<rootDir>/src/app/utils",
-      "<rootDir>/src/schemas",
-      "<rootDir>/__tests__"
-    ]
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
@@ -77,7 +44,6 @@
     "appcache-webpack-plugin": "^1.4.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
-    "babel-jest": "^23.6.0",
     "babel-loader": "^8.0.0",
     "copy-webpack-plugin": "^4.5.2",
     "create-react-class": "^15.6.3",
@@ -98,7 +64,6 @@
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "file-loader": "^2.0.0",
     "html-webpack-plugin": "^3.0.7",
-    "jest-cli": "^23.6.0",
     "jsen": "^0.6.4",
     "json-loader": "^0.5.4",
     "less": "^3.8.1",
