@@ -16,7 +16,7 @@ function shipSummary(shipId) {
   let ship = Factory.newShip(shipId);
 
   let coreSizes = ship.readMeta('coreSizes');
-  let { jumpRange, totalRange } = ship.getMetrics(JUMP_METRICS);
+  let { jumpRangeLaden, totalRange } = ship.getMetrics(JUMP_METRICS);
   let summary = {
     agility: ship.readProp('pitch') + ship.readProp('yaw') + ship.readProp('roll'),
     baseArmour: ship.readProp('basearmour'),
@@ -32,7 +32,7 @@ function shipSummary(shipId) {
     masslock: ship.readProp('masslock'),
     hp: [0, 0, 0, 0, 0], // Utility, Small, Medium, Large, Huge
     int: [0, 0, 0, 0, 0, 0, 0, 0], // Sizes 1 - 8
-    jumpRange,
+    jumpRangeLaden,
     pitch: ship.readProp('pitch'),
     retailCost: ship.readMeta('retailCost'),
     roll: ship.readProp('roll'),
@@ -195,7 +195,7 @@ export default class ShipyardPage extends Page {
         <td className="ri">{fInt(s.pitch)}</td>
         <td className="ri">{fInt(s.yaw)}</td>
         <td className="ri">{fInt(s.roll)}</td>
-        <td className="ri">{fRound(s.jumpRange)}</td>
+        <td className="ri">{fRound(s.jumpRangeLaden)}</td>
         <td className="ri">{fRound(s.totalRange)}</td>
         <td className="ri">{fInt(s.hardness)}</td>
         <td className="ri">{fInt(s.baseArmour)}</td>
@@ -400,7 +400,7 @@ export default class ShipyardPage extends Page {
                     <th className="sortable" onClick={sortShips('roll')}>
                       {translate('roll')}
                     </th>
-                    <th className="sortable lft" onClick={sortShips('jumpRange')}>
+                    <th className="sortable lft" onClick={sortShips('jumpRangeLaden')}>
                       {translate('jump')}
                     </th>
                     <th className="sortable" onClick={sortShips('totalRange')}>
@@ -466,7 +466,7 @@ export default class ShipyardPage extends Page {
                     <th className="sortable" onClick={sortShips('roll')}>
                       {units['°/s']}
                     </th>
-                    <th className="sortable lft" onClick={sortShips('jumpRange')}>
+                    <th className="sortable lft" onClick={sortShips('jumpRangeLaden')}>
                       {units.LY}
                     </th>
                     <th className="sortable" onClick={sortShips('totalRange')}>

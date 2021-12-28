@@ -29,7 +29,7 @@ export default class FSDProfile extends TranslatedComponent {
     const minMass = ship.readProp('hullmass');
     const maxMass = ship.getThrusters().get('enginemaximalmass');
     const mass = ship.get(LADEN_MASS);
-    const cb = (mass) => calculateJumpRange(ship, mass, Infinity, true);
+    const cb = (mass) => calculateJumpRange(ship.getFSD(), 0, mass, Infinity, true);
     return (
       <LineChart
         xMin={minMass}
