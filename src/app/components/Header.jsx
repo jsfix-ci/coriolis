@@ -7,7 +7,6 @@ import ActiveLink from './ActiveLink';
 import cn from 'classnames';
 import { Cogs, CoriolisLogo, Hammer, Help, Rocket, StatsBars } from './SvgIcons';
 import Persist from '../stores/Persist';
-import { toDetailedExport } from '../shipyard/Serializer';
 import ModalDeleteAll from './ModalDeleteAll';
 import ModalExport from './ModalExport';
 import ModalHelp from './ModalHelp';
@@ -16,7 +15,8 @@ import Slider from './Slider';
 import Announcement from './Announcement';
 import { outfitURL } from '../utils/UrlGenerators';
 import autoBind from 'auto-bind';
-import { Factory } from 'ed-forge';
+import { Factory, Ship } from 'ed-forge';
+import { chain, entries } from 'lodash';
 
 const SIZE_MIN = 0.65;
 const SIZE_RANGE = 0.55;
@@ -209,20 +209,6 @@ export default class Header extends TranslatedComponent {
   };
 
   /**
-   * Show export modal with backup data
-   * @param  {SyntheticEvent} e Event
-   */
-  _showBackup(e) {
-    let translate = this.context.language.translate;
-    e.preventDefault();
-    this.context.showModal(<ModalExport
-      title={translate('backup')}
-      description={translate('PHRASE_BACKUP_DESC')}
-      data={Persist.getAll()}
-    />);
-  };
-
-  /**
    * Show export modal with detailed export
    * @param  {SyntheticEvent} e Event
    */
@@ -230,10 +216,22 @@ export default class Header extends TranslatedComponent {
     let translate = this.context.language.translate;
     e.preventDefault();
 
+    const builds = chain(Persist.getBuilds())
+      .values()
+      .map((builds) => Object.values(builds))
+      .flatMap()
+      .map((code) => new Ship(code))
+      .value();
+
     this.context.showModal(<ModalExport
       title={translate('detailed export')}
       description={translate('PHRASE_EXPORT_DESC')}
-      data={toDetailedExport(Persist.getBuilds())}
+      data={JSON.stringify(builds.map((build) => {
+        return {
+          header: { appName: 'Inara', 'appVersion': '1.0' },
+          data: build.toJSON(),
+        };
+      }))}
     />);
   }
 
@@ -432,10 +430,9 @@ export default class Header extends TranslatedComponent {
         <hr />
         <ul style={{ width: '100%' }}>
           {translate('builds')} & {translate('comparisons')}
-          <li><Link href="#" className='block' onClick={this._showBackup.bind(this)}>{translate('backup')}</Link></li>
-          <li><Link href="#" className='block' onClick={this._showDetailedExport.bind(this)}>{translate('detailed export')}</Link></li>
-          <li><Link href="#" className='block' onClick={this._showImport.bind(this)}>{translate('import')}</Link></li>
-          <li><Link href="#" className='block' onClick={this._showDeleteAll.bind(this)}>{translate('delete all')}</Link></li>
+          <li><Link href="#" className='block' onClick={this._showDetailedExport}>{translate('detailed export')}</Link></li>
+          <li><Link href="#" className='block' onClick={this._showImport}>{translate('import')}</Link></li>
+          <li><Link href="#" className='block' onClick={this._showDeleteAll}>{translate('delete all')}</Link></li>
         </ul>
         <hr />
         <table style={{ width: 300, backgroundColor: 'transparent' }}>
