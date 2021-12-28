@@ -291,8 +291,8 @@ export default class Offence extends TranslatedComponent {
               <tr className='main'>
                 <th rowSpan='2' className='sortable' onClick={sortOrder.bind(this, 'classRating')}>{translate('weapon')}</th>
                 <th colSpan='1'>{translate('overall')}</th>
-                <th colSpan='2'>{translate('opponent\'s shields')}</th>
-                <th colSpan='2'>{translate('opponent\'s armour')}</th>
+                <th colSpan='3'>{translate('opponent\'s shields')}</th>
+                <th colSpan='3'>{translate('opponent\'s armour')}</th>
               </tr>
               <tr>
                 <th className='lft sortable' onMouseOver={termtip.bind(null, 'TT_EFFECTIVE_SDPS_SHIELDS')}
@@ -358,6 +358,7 @@ export default class Offence extends TranslatedComponent {
                       ={formats.f1(armourSdps)}
                     </span>
                   </td>
+                  <td></td>
                   <td></td>
                 </tr>
               }

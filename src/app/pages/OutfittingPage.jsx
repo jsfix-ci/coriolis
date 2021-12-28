@@ -16,7 +16,6 @@ import {
   LinkIcon,
   ShoppingIcon,
   MatIcon,
-  OrbisIcon
 } from '../components/SvgIcons';
 import ShipSummaryTable from '../components/ShipSummaryTable';
 import StandardSlotSection from '../components/StandardSlotSection';
@@ -26,7 +25,6 @@ import UtilitySlotSection from '../components/UtilitySlotSection';
 import OutfittingSubpages from '../components/OutfittingSubpages';
 import ModalExport from '../components/ModalExport';
 import ModalPermalink from '../components/ModalPermalink';
-import ModalOrbis from '../components/ModalOrbis';
 import autoBind from 'auto-bind';
 import { assign } from 'lodash';
 import EDEngineerButton from '../components/EDEngineerButton';
@@ -359,23 +357,6 @@ export default class OutfittingPage extends Page {
   }
 
   /**
-   * Generate Orbis link
-   */
-  _genOrbis() {
-    const data = {};
-    const ship = this.state.ship;
-    ship.coriolisId = ship.id;
-    data.coriolisShip = ship;
-    data.url = window.location.href;
-    data.title = this.state.buildName || ship.id;
-    data.description = this.state.buildName || ship.id;
-    data.ShipName = ship.id;
-    data.Ship = ship.id;
-    console.log(data);
-    this.context.showModal(<ModalOrbis ship={data} />);
-  }
-
-  /**
    * Open up a window for EDDB with a shopping list of our components
    */
   _eddbShoppingList() {
@@ -578,13 +559,6 @@ export default class OutfittingPage extends Page {
               onMouseOut={hide}
             >
               <LinkIcon className="lg" />
-            </button>
-            <button
-              onClick={this._genOrbis}
-              onMouseOver={termtip.bind(null, 'PHASE_UPLOAD_ORBIS')}
-              onMouseOut={hide}
-            >
-              <OrbisIcon className="lg" />
             </button>
             <EDEngineerButton ship={ship} />
           </div>

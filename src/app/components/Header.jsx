@@ -8,7 +8,6 @@ import cn from 'classnames';
 import { Cogs, CoriolisLogo, Hammer, Help, Rocket, StatsBars } from './SvgIcons';
 import Persist from '../stores/Persist';
 import { toDetailedExport } from '../shipyard/Serializer';
-import ModalBatchOrbis from './ModalBatchOrbis';
 import ModalDeleteAll from './ModalDeleteAll';
 import ModalExport from './ModalExport';
 import ModalHelp from './ModalHelp';
@@ -367,7 +366,10 @@ export default class Header extends TranslatedComponent {
     if (this.props.announcements) {
       announcements = [];
       for (let announce of this.props.announcements) {
-        announcements.push(<Announcement text={announce.message} />);
+        if (announce.expiry < Date.now()) {
+          continue;
+        }
+        announcements.push(<Announcement text={announce.text} />);
         announcements.push(<hr/>);
       }
     }
