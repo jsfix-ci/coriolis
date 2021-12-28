@@ -145,12 +145,11 @@ export default class OutfittingSubpages extends TranslatedComponent {
                 <h1>{translate('movement profile')}</h1>
                 <Movement code={code} ship={ship} boost={boost} pips={pips} />
               </div>
-              <div className='group third'>
+              <div className='group half'>
                 <h1>{translate('damage to opponent\'s shields')}</h1>
                 <WeaponDamageChart code={code} ship={ship} opponentDefence={opponent.getShield()} engagementRange={engagementRange} />
               </div>
-
-              <div className='group third'>
+              <div className='group half'>
                 <h1>{translate('damage to opponent\'s hull')}</h1>
                 <WeaponDamageChart code={code} ship={ship} opponentDefence={opponent.getArmour()} engagementRange={engagementRange} />
               </div>
