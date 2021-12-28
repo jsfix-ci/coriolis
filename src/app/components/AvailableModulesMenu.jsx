@@ -6,8 +6,10 @@ import cn from 'classnames';
 import { MountFixed, MountGimballed, MountTurret } from './SvgIcons';
 import FuzzySearch from 'react-fuzzy';
 import { getModuleInfo } from 'ed-forge/lib/src/data/items';
-import { groupBy, mapValues, sortBy } from 'lodash';
+import { get, groupBy, mapValues, sortBy, zip, zipWith } from 'lodash';
 import autoBind from 'auto-bind';
+import MODULE_STATS from 'ed-forge/lib/src/module-stats';
+import { SHOW } from '../shipyard/StatsMapping';
 
 const PRESS_THRESHOLD = 500; // mouse/touch down threshold
 
@@ -23,7 +25,6 @@ const MOUNT_MAP = {
 export default class AvailableModulesMenu extends TranslatedComponent {
   static propTypes = {
     onSelect: PropTypes.func.isRequired,
-    diffDetails: PropTypes.func,
     hideSearch: PropTypes.bool,
     m: PropTypes.object,
     warning: PropTypes.func,
@@ -196,14 +197,47 @@ export default class AvailableModulesMenu extends TranslatedComponent {
    * @param  {DOMRect} rect DOMRect for target element
    */
   _showDiff(mountedModule, hoveringModule, rect) {
-    if (this.props.diffDetails) {
-      this.touchTimeout = null;
-      // TODO:
-      // this.context.tooltip(
-      //   this.props.diffDetails(hoveringModule, mountedModule),
-      //   rect,
-      // );
-    }
+    const { tooltip, language } = this.context;
+    const { formats, translate, units } = language;
+    this.touchTimeout = null;
+    const mountedIsEmpty = mountedModule.isEmpty();
+    const props = (
+      mountedIsEmpty ? ['mass'] : Object.keys(hoveringModule.props)
+    ).map((prop) => SHOW[prop] ? SHOW[prop].as : prop);
+    const oldProps = mountedIsEmpty ?
+      [{ value: 0 }] :
+      props.map((prop) => mountedModule.getFormatted(prop, false));
+    const newProps = mountedModule.try(() => {
+      mountedModule.setItem(hoveringModule.proto.Item);
+      return props.map((prop) => mountedModule.getFormatted(prop, false));
+    });
+
+    const diffs = zipWith(oldProps, newProps, (oldVal, newVal) => {
+      const { unit, value } = newVal;
+      if (!oldVal.value) {
+        return undefined;
+      }
+      return { value, diff: value - oldVal.value, unit };
+    });
+    const namedDiffs = zip(props, diffs).filter(([_, stat]) => stat !== undefined);
+    namedDiffs.push(['cost', {
+      value: hoveringModule.meta.cost,
+      diff: hoveringModule.meta.cost - (mountedIsEmpty ? 0 : mountedModule.readMeta('cost')),
+      unit: units.CR,
+    }]);
+
+    const tt = <div className='cap' style={{ whiteSpace: 'nowrap' }}>
+      {sortBy(namedDiffs, ([prop, _]) => prop).map(([prop, stats]) => {
+        const { unit, value, diff } = stats;
+        const beneficial = get(MODULE_STATS, [prop, 'higherbetter'], false) === diff > 0;
+        return <div key={prop}>
+          {translate(prop)}: <span className={diff === 0 ? 'disabled' : beneficial ? 'secondary' : 'warning'}>
+            {formats.round(value)} {diff !== 0 && ` (${diff > 0 ? '+' : ''}${formats.round(diff)})`}{unit}
+          </span>
+        </div>;
+      })}
+    </div>;
+    tooltip(tt, rect);
   }
 
   /**

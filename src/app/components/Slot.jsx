@@ -233,7 +233,6 @@ export default class Slot extends TranslatedComponent {
               this.context.closeMenu();
             }}
             warning={warning}
-            // diffDetails={diffDetails.bind(ship, this.context.language)}
           />}
         {selected && menuIndex === 1 &&
           <ModificationsMenu m={m} propsToShow={propsToShow}
